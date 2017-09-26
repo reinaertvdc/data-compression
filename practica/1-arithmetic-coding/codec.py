@@ -59,14 +59,14 @@ def encodeToRange(text):
 
     bottom = Decimal('0.0')
     top = Decimal('1.0')
-    range = Decimal('1.0')
+    range = top - bottom
 
     alphabetInfo = getAlphabetInfo(text)
     fractions, totalLength = getAlphabetFractions(alphabetInfo)
 
     for c in text:
-        bottom = bottom + range * fractions[c]['bottom']
         top = bottom + range * fractions[c]['top']
+        bottom = bottom + range * fractions[c]['bottom']
         range = top - bottom
 
     return (bottom, top, alphabetInfo)
@@ -142,5 +142,5 @@ if __name__ == '__main__':
         fraction = binStringToDecimalFraction(inputString)
         outputString = decodeDecimalFraction(fraction, alphabetInfo)
 
-        with open(outputFilePath) as outputFile:
+        with open(outputFilePath, 'w') as outputFile:
             outputFile.write(outputString)
