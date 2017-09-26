@@ -9,7 +9,6 @@ decimal.getcontext().prec = 200
 
 
 def binStringToDecimalFraction(binStr):
-    # TODO calculate fraction
     sum = Decimal('0.0')
     for i, c in enumerate(binStr):
         if c == '1':
@@ -23,6 +22,19 @@ def decodeDecimalFraction(value, alphabetInfo):
     return ''
 
 
+def getAlphabetInfo(text):
+    result = dict()
+    for c in text:
+        if c in result:
+            result[c] += 1
+        else:
+            result[c] = 1
+    out = []
+    for c in sorted(result):
+        out.append([c, result[c]])
+    return out
+
+
 def encodeToRange(text):
     if len(text) > 100:
         raise ValueError('Input string is longer than 100 characters')
@@ -32,7 +44,7 @@ def encodeToRange(text):
     # TODO determine range and alphabet info
     bottom = Decimal('0.0')
     top = Decimal('0.0')
-    alphabetInfo = []
+    alphabetInfo = getAlphabetInfo(text)
 
     return (bottom, top, alphabetInfo)
 
