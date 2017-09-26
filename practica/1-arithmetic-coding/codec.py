@@ -10,7 +10,12 @@ decimal.getcontext().prec = 200
 
 def binStringToDecimalFraction(binStr):
     # TODO calculate fraction
-    return Decimal('0.0')
+    sum = Decimal('0.0')
+    for i, c in enumerate(binStr):
+        if c == '1':
+            sum += Decimal('2')**Decimal(str(-(i+1)))
+    print(sum)
+    return sum
 
 
 def decodeDecimalFraction(value, alphabetInfo):
@@ -78,10 +83,10 @@ if __name__ == '__main__':
         bottom, top, alphabetInfo = encodeToRange(inputString)
         binaryString = generateBinaryStringInRange(bottom, top)
 
-        with open(outputFilePath) as outputFile:
+        with open(outputFilePath, 'w') as outputFile:
             outputFile.write(binaryString)
         
-        with open(alphabetInfoFilePath) as alphabetInfoFile:
+        with open(alphabetInfoFilePath, 'w') as alphabetInfoFile:
             json.dump(alphabetInfo, alphabetInfoFile)
     elif mode == 'decode':
         alphabetInfoFilePath = sys.argv[3]
