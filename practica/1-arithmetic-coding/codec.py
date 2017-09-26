@@ -13,13 +13,27 @@ def binStringToDecimalFraction(binStr):
     for i, c in enumerate(binStr):
         if c == '1':
             sum += Decimal('2')**Decimal(str(-(i+1)))
-    print(sum)
     return sum
 
 
 def decodeDecimalFraction(value, alphabetInfo):
-    # TODO decode
-    return ''
+    fractions, totalLength = getAlphabetFractions(alphabetInfo)
+    s = ''
+    bottom = Decimal('0')
+    top = Decimal('1')
+    range = top - bottom
+    while len(s) < totalLength:
+        for key, val in fractions.items():
+            range_low = val['bottom']
+            range_high = val['top']
+            if range_low <= value < range_high:
+                s += key
+                break
+        bottom = range_low
+        top = range_high
+        range = top - bottom
+        value = (value - bottom) / range
+    return s
 
 
 def getAlphabetInfo(text):
@@ -42,16 +56,34 @@ def encodeToRange(text):
         raise ValueError('Input string contains characters other than lowercase a-z and space')
 
     # TODO determine range and alphabet info
+
     bottom = Decimal('0.0')
-    top = Decimal('0.0')
+    top = Decimal('1.0')
+    range = Decimal('1.0')
+
     alphabetInfo = getAlphabetInfo(text)
+    fractions, totalLength = getAlphabetFractions(alphabetInfo)
+
+    for c in text:
+        bottom = bottom + range * fractions[c]['bottom']
+        top = bottom + range * fractions[c]['top']
+        range = top - bottom
 
     return (bottom, top, alphabetInfo)
 
 
 def generateBinaryStringInRange(bottom, top):
-    # TODO generate binary string
-    return ''
+    code = ''
+    value = Decimal('0')
+    while value < bottom:
+        k = -(len(code)+1)
+        bitVal = Decimal('2')**Decimal(k)
+        if value + bitVal < top:
+            value += bitVal
+            code += '1'
+        else:
+            code += '0'
+    return code
 
 
 def getAlphabetFractions(alphabetInfo):
@@ -59,17 +91,17 @@ def getAlphabetFractions(alphabetInfo):
     totalLength = 0
 
     for character, frequency in alphabetInfo:
-        # TODO calculate range
-        bottom = Decimal('0.0')
-        top = Decimal('0.0')
-
-        rangeInfo[character] = {
-            'bottom': bottom,
-            'top': top,
-        }
-
         totalLength += frequency
 
+    lastTop = Decimal('0')
+
+    for character, frequency in alphabetInfo:
+        newTop = lastTop + Decimal(frequency) / Decimal(totalLength)
+        rangeInfo[character] = {
+            'bottom': lastTop,
+            'top': newTop,
+        }
+        lastTop = newTop
     return (rangeInfo, totalLength)
 
 
