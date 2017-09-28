@@ -177,36 +177,38 @@ if __name__ == '__main__':
         inputString = inputFile.read().replace('\r\n', '').replace('\n', '')
     # TEST mode
     if mode == 'test':
+        # Calculate the range, get the mean value between it and decode again
         bottom, top, alphabetInfo = encodeToRange(inputString)
         mean = (bottom + top) / 2
         outputString = decodeDecimalFraction(mean, alphabetInfo)
-
+        # Output to console
         print(' INPUT: "' + inputString + '"')
         print('OUTPUT: "' + outputString + '"')
         print('They are' + ('' if inputString == outputString else ' NOT') + ' identical.')
     # ENCODE mode
     elif mode == 'encode':
+        # read encoded string output file and alphabet info output file from command line arguments
         outputFilePath = sys.argv[3]
         alphabetInfoFilePath = sys.argv[4]
-
+        # Calculate the binary string value
         bottom, top, alphabetInfo = encodeToRange(inputString)
         binaryString = generateBinaryStringInRange(bottom, top)
-
+        # Write output
         with open(outputFilePath, 'w') as outputFile:
             outputFile.write(binaryString)
-        
         with open(alphabetInfoFilePath, 'w') as alphabetInfoFile:
             json.dump(alphabetInfo, alphabetInfoFile)
     # DECODE mode
     elif mode == 'decode':
+        # Read decoded string output file and alphabet info input file from command line arguments
         alphabetInfoFilePath = sys.argv[3]
         outputFilePath = sys.argv[4]
-
+        # Read alphabet info from specified file
         with open(alphabetInfoFilePath) as alphabetInfoFile:
             alphabetInfo = json.load(alphabetInfoFile)
-        
+        # Decode the binary string into a string
         fraction = binStringToDecimalFraction(inputString)
         outputString = decodeDecimalFraction(fraction, alphabetInfo)
-
+        # Write the decoded string to a file
         with open(outputFilePath, 'w') as outputFile:
             outputFile.write(outputString)
