@@ -1,21 +1,16 @@
-//
-// Created by cwout on 13/10/17.
-//
-
 #ifndef PROJECT_PIXELBLOCK_H
 #define PROJECT_PIXELBLOCK_H
 
 
 class PixelBlock {
-
-private:
-    unsigned char pixels[4][4];
-
 public:
+    static const int WIDTH = 4;
+    static const int HEIGHT = WIDTH;
+
+    unsigned const char pixels[WIDTH][HEIGHT] = {};
+
     PixelBlock();
     virtual ~PixelBlock();
-
-
 };
 
 

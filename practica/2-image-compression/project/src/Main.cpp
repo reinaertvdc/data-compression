@@ -5,26 +5,43 @@
 #include "Main.h"
 
 int Main::main(int argc, char *const *argv, bool encode, bool decode) {
+    // Validate program arguments.
     if (argc != 2) {
-        std::cout << "Usage: " << argv[0] << " CONFIG_FILE" << std::endl;
+        std::string programPath = std::string(argv[0]);
+        std::string programFilename = programPath.substr(
+                programPath.find_last_of('/') + 1, programPath.length());
+
+        std::cerr << "Usage: " << programFilename
+                  << " CONFIG_FILE" << std::endl;
+
         return 1;
     }
 
-    std::string configFilePath = argv[1];
-
+    // Read configuration file.
     ConfigReader configReader = ConfigReader();
-
     if (!configReader.read(argv[1])) {
-        std::cout << "Could not read config file <"
-                  << argv[1]
-                  << ">"
-                  << std::endl
-                  << configReader.getErrorDescription()
-                  << std::endl;
+        std::cerr << "Could not read configuration file: "
+                  << configReader.getErrorDescription() << std::endl;
+
         return 1;
     }
 
-    Config config = Config(configReader);
+    // Load configuration.
+    try {
+        Config config = Config(configReader);
+    } catch (std::string &e) {
+        std::cerr << "Invalid configuration: " << e << std::endl;
+
+        return 1;
+    }
+
+    if (encode) {
+        //TODO: encode
+    }
+
+    if (decode) {
+        //TODO: decode
+    }
 
     return 0;
 }
