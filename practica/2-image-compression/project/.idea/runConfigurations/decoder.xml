@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="decoder" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="../settings.conf" PASS_PARENT_ENVS_2="true" PROJECT_NAME="project" TARGET_NAME="decoder" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="project" RUN_TARGET_NAME="decoder">
+    <envs />
+    <method />
+  </configuration>
+</component>

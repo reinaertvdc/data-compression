@@ -29,7 +29,7 @@ QuantMatrix QuantFileParser::parseFile(std::string filename) {
         //TODO
     }
     while (getline(file, line)) {
-        std::cout << splitBySpaces(line) << std::endl;
+        //std::cout << splitBySpaces(line) << std::endl;
     }
 
 
