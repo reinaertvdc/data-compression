@@ -1,6 +1,7 @@
 
 #include "Init.h"
 #include "QuantFileParser.h"
+#include "RawFileParser.h"
 #include <iostream>
 #include <unistd.h>
 
@@ -41,16 +42,24 @@ const Config &Init::getConfig() const {
 
 Init::Init(int argc, char *const *argv) {
     int step = 0;
-    int totalStep = 2;
+    int totalStep = 3;
     if (!(this->initialized = this->init(argc, argv))) return;
     std::cout << "[" << ++step << "/" << totalStep << " OK] Configuration read, all key values found" << std::endl;
     if (!(this->initialized = this->initQuantMatrix())) return;
     std::cout << "[" << ++step << "/" << totalStep << " OK] Quantization matrix file read, no major problem detected" << std::endl;
+    if (!(this->initialized = this->initRawFile())) return;
+    std::cout << "[" << ++step << "/" << totalStep << " OK] Raw image file read" << std::endl;
     std::cout << "Initialization done" << std::endl;
 }
 
 bool Init::initQuantMatrix() {
     ByteMatrix matrix = QuantFileParser::parseFile(this->conf.getQuantMatrixFilePath());
     return !matrix.isEmpty();
+}
+
+bool Init::initRawFile() {
+    if (this->conf.getRawFilePath().empty()) return true;
+    this->rawImage = RawFileParser::parseFile(this->conf.getRawFilePath(), this->conf.getWidth(), this->conf.getHeight());
+    return this->rawImage != nullptr;
 }
 

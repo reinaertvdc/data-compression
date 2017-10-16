@@ -16,8 +16,10 @@ private:
     std::string confFileName;
     Config conf;
     ByteMatrix quantMatrix;
+    ByteMatrix* rawImage;
     bool init(int argc, char *const *argv);
     bool initQuantMatrix();
+    bool initRawFile();
 public:
     explicit Init(int argc, char *const *argv);
     bool isInitialized() const { return this->initialized; }
