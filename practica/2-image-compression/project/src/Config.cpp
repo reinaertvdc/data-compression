@@ -2,42 +2,79 @@
 #include "Config.h"
 
 Config::Config(ConfigReader &configReader) :
-        configReader(configReader),
+        missingValues(),
+        rawFilePath(this->getString(configReader, "rawfile")),
+        encodedFilePath(this->getString(configReader, "encfile")),
+        decodedFilePath(this->getString(configReader, "decfile")),
+        width(this->getInt(configReader, "width")),
+        height(this->getInt(configReader, "height")),
+        applyRle(this->getBool(configReader, "rle")),
+        quantMatrixFilePath(this->getString(configReader, "quantfile")),
+        logFilePath(this->getString(configReader, "logfile")) {}
 
-        rawFilePath(getString("rawfile")),
-        encodedFilePath(getString("encfile")),
-        decodedFilePath(getString("decfile")),
-
-        width(getInt("width")),
-        height(getInt("height")),
-
-        applyRle(getBool("rle")),
-
-        quantMatrixFilePath(getString("quantfile")),
-        logFilePath(getString("logfile")) {}
-
-std::string Config::getValue(const std::string &key) {
-    std::string value;
-
-    if (!configReader.getKeyValue(key, value)) {
-        throw "Key '" + key + "' not found";
+bool Config::getValue(ConfigReader &configReader, const std::string &key, std::string &value) {
+    std::string val;
+    if (!configReader.getKeyValue(key, val)) {
+        this->missingValues.push_back(key);
+        value = std::string("");
+        return false;
     }
+    else {
+        value = val;
+        return true;
+    }
+}
 
+bool Config::getBool(ConfigReader &configReader, const std::string &key) {
+    std::string value;
+    bool valueFound = this->getValue(configReader, key, value);
+    if (valueFound) {
+        return value == "1" || value == "t" || value == "T" || value == "true" || value == "True";
+    }
+    else {
+        return false;
+    }
+}
+
+int Config::getInt(ConfigReader &configReader, const std::string &key) {
+    std::string value;
+    bool valueFound = this->getValue(configReader, key, value);
+    if (valueFound) {
+        return std::stoi(value);
+    }
+    else {
+        return 0;
+    }
+}
+
+std::string Config::getString(ConfigReader &configReader, const std::string &key) {
+    std::string value;
+    this->getValue(configReader, key, value);
     return value;
 }
 
-bool Config::getBool(const std::string &key) {
-    std::string value = getValue(key);
-
-    return value == "1" ||
-           value == "t" || value == "T" ||
-           value == "true" || value == "True";
+int Config::getMissingKeyCount() const {
+    return static_cast<int>(this->missingValues.size());
 }
 
-int Config::getInt(const std::string &key) {
-    return std::stoi(getValue(key));
+const std::string Config::getMissingKey(int index) const {
+    if (index < 0 || index >= this->getMissingKeyCount()) {
+        return std::string("");
+    }
+    return this->missingValues[index];
 }
 
-std::string Config::getString(const std::string &key) {
-    return getValue(key);
+const std::string Config::getMissingKeysAsString() const {
+    std::string s;
+    bool first = true;
+    for (const std::string &key : this->missingValues) {
+        if (first) {
+            first = false;
+        }
+        else {
+            s += ",";
+        }
+        s += key;
+    }
+    return s;
 }
