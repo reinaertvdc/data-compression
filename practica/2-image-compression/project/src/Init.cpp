@@ -1,39 +1,32 @@
-#include <string>
-#include <iostream>
-#include "configreader.h"
-#include "Config.h"
-#include "Main.h"
 
-int Main::main(int argc, char *const *argv, bool encode, bool decode) {
+#include "Init.h"
+#include <iostream>
+
+bool Init::init(int argc, char *const *argv) {
     // Validate argument count
     if (argc != 2) {
         std::string programPath = std::string(argv[0]);
         std::string programFilename = programPath.substr(programPath.find_last_of('/') + 1, programPath.length());
         std::cerr << "Usage: " << programFilename << " CONFIG_FILE" << std::endl;
-        return 1;
+        return false;
     }
 
     // Read configuration file
     ConfigReader configReader = ConfigReader();
     if (!configReader.read(argv[1])) {
         std::cerr << "Could not read configuration file: " << configReader.getErrorDescription() << std::endl;
-        return 1;
+        return false;
     }
 
     // Load configuration
-    Config config(configReader);
-    if (config.getMissingKeyCount() > 0) {
-        std::cerr << "Invalid configuration! Missing keys: " << config.getMissingKeysAsString() << std::endl;
-        return 1;
+    this->conf = Config(configReader);
+    if (this->conf.getMissingKeyCount() > 0) {
+        std::cerr << "Invalid configuration! Missing keys: " << this->conf.getMissingKeysAsString() << std::endl;
+        return false;
     }
+    return true;
+}
 
-    if (encode) {
-        //TODO: encode
-    }
-
-    if (decode) {
-        //TODO: decode
-    }
-
-    return 0;
+Config Init::getConfig() {
+    return this->conf;
 }

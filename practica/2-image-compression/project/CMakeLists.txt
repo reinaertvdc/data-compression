@@ -3,11 +3,11 @@ project(project)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(SOURCE_FILES src/Main.cpp src/configreader.cpp src/BitStream.cpp src/PixelBlock.cpp src/QuantMatrix.cpp src/QuantFileParser.cpp src/Config.cpp src/MainEncoder.cpp)
+set(SOURCE_FILES src/configreader.cpp src/BitStream.cpp src/PixelBlock.cpp src/QuantMatrix.cpp src/QuantFileParser.cpp src/Config.cpp src/Init.cpp)
 set(SOURCE_FILES_ENCODER src/MainEncoder.cpp)
-set(SOURCE_FILES_DECODER )
-set(SOURCE_FILES_CODEC )
+set(SOURCE_FILES_DECODER src/MainDecoder.cpp)
+set(SOURCE_FILES_CODEC src/MainCodec.cpp)
 
-add_executable(encoder src/encoder.cpp ${SOURCE_FILES})
-add_executable(decoder src/decoder.cpp ${SOURCE_FILES})
-add_executable(codec src/codec.cpp ${SOURCE_FILES})
+add_executable(encoder ${SOURCE_FILES} ${SOURCE_FILES_ENCODER})
+add_executable(decoder ${SOURCE_FILES} ${SOURCE_FILES_DECODER})
+add_executable(codec ${SOURCE_FILES} ${SOURCE_FILES_CODEC})

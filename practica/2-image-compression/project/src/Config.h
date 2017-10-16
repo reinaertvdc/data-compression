@@ -14,7 +14,20 @@ private:
      * Contains the values that are missing
      */
     mutable std::vector<std::string> missingValues;
+    /**
+     * Configuration values
+     */
+    std::string rawFilePath;
+    std::string encodedFilePath;
+    std::string decodedFilePath;
+    int width;
+    int height;
+    bool applyRle;
+    std::string quantMatrixFilePath;
+    std::string logFilePath;
 public:
+    //TODO
+    Config();
     /**
      * Constructor
      * @param configReader the configuration reader to initialize the configuration from
@@ -36,17 +49,17 @@ public:
      * @return std::string containing all missing keys (comma-seperated)
      */
     const std::string getMissingKeysAsString() const;
-    /**
-     * Configuration values
-     */
-    const std::string rawFilePath;
-    const std::string encodedFilePath;
-    const std::string decodedFilePath;
-    const int width;
-    const int height;
-    const bool applyRle;
-    const std::string quantMatrixFilePath;
-    const std::string logFilePath;
+    const std::string &getRawFilePath() const { return this->rawFilePath; }
+    const std::string &getEncodedFilePath() const { return this->encodedFilePath; }
+    const std::string &getDecodedFilePath() const { return this->decodedFilePath; }
+    const std::string &getQuantMatrixFilePath() const { return this->quantMatrixFilePath; }
+    const std::string &getLogFilePath() const { return this->logFilePath; }
+    const int getWidth() const { return this->width; }
+    const int getHeight() const { return this->height; }
+    const bool getApplyRle() const { return this->applyRle; }
+    //TODO
+    Config& operator=(Config&&);
+    Config(const Config&);
 private:
     /**
      * Get a value (as string) from a config reader based on a key

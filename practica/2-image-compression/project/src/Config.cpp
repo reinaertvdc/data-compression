@@ -1,6 +1,26 @@
 #include <iostream>
 #include "Config.h"
 
+Config::Config() :
+        missingValues(),
+        rawFilePath(""),
+        encodedFilePath(""),
+        decodedFilePath(""),
+        width(0),
+        height(0),
+        applyRle(false),
+        quantMatrixFilePath(""),
+        logFilePath("") {
+    this->missingValues.emplace_back("rawfile");
+    this->missingValues.emplace_back("encfile");
+    this->missingValues.emplace_back("decfile");
+    this->missingValues.emplace_back("width");
+    this->missingValues.emplace_back("height");
+    this->missingValues.emplace_back("rle");
+    this->missingValues.emplace_back("quantfile");
+    this->missingValues.emplace_back("logfile");
+}
+
 Config::Config(ConfigReader &configReader) :
         missingValues(),
         rawFilePath(this->getString(configReader, "rawfile")),
@@ -77,4 +97,35 @@ const std::string Config::getMissingKeysAsString() const {
         s += key;
     }
     return s;
+}
+
+Config &Config::operator=(Config && other) {
+    this->missingValues = std::vector<std::string>();
+    for (std::string key : other.missingValues) {
+        this->missingValues.emplace_back(key);
+    }
+    this->rawFilePath = other.rawFilePath;
+    this->encodedFilePath = other.encodedFilePath;
+    this->decodedFilePath = other.decodedFilePath;
+    this->logFilePath = other.logFilePath;
+    this->quantMatrixFilePath = other.quantMatrixFilePath;
+    this->width = other.width;
+    this->height = other.height;
+    this->applyRle = other.applyRle;
+    return *this;
+}
+
+Config::Config(const Config & other) {
+    this->missingValues = std::vector<std::string>();
+    for (std::string key : other.missingValues) {
+        this->missingValues.emplace_back(key);
+    }
+    this->rawFilePath = other.rawFilePath;
+    this->encodedFilePath = other.encodedFilePath;
+    this->decodedFilePath = other.decodedFilePath;
+    this->logFilePath = other.logFilePath;
+    this->quantMatrixFilePath = other.quantMatrixFilePath;
+    this->width = other.width;
+    this->height = other.height;
+    this->applyRle = other.applyRle;
 }
