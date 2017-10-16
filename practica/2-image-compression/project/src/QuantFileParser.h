@@ -8,13 +8,13 @@
 
 #include "QuantMatrix.h"
 #include <string>
+#include <vector>
 
 class QuantFileParser {
-
 public:
     static QuantMatrix parseFile(std::string filename);
-
-
+private:
+    static std::vector<std::string> splitBySpaces(std::string line);
 };
 
 

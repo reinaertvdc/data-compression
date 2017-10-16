@@ -9,9 +9,12 @@
 class QuantMatrix {
 private:
     int matrix[4][4];
+    bool empty;
 public:
-    QuantMatrix(int matrix[4][4]);
-    virtual ~QuantMatrix();
+    QuantMatrix();
+    explicit QuantMatrix(int matrix[4][4]);
+    virtual ~QuantMatrix() = default;
+    bool isEmpty() { return this->empty; }
 };
 
 
