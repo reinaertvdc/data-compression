@@ -1,0 +1,5 @@
+/home/cwout/Documents/Unief/Dc/practica/2-image-compression/project/build_release/CMakeFiles/rebuild_cache.dir
+/home/cwout/Documents/Unief/Dc/practica/2-image-compression/project/build_release/CMakeFiles/edit_cache.dir
+/home/cwout/Documents/Unief/Dc/practica/2-image-compression/project/build_release/CMakeFiles/codec.dir
+/home/cwout/Documents/Unief/Dc/practica/2-image-compression/project/build_release/CMakeFiles/decoder.dir
+/home/cwout/Documents/Unief/Dc/practica/2-image-compression/project/build_release/CMakeFiles/encoder.dir
