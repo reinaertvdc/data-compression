@@ -1,1 +1,0 @@
-/usr/bin/c++  -O3 -DNDEBUG   CMakeFiles/codec.dir/src/configreader.cpp.o CMakeFiles/codec.dir/src/BitStream.cpp.o CMakeFiles/codec.dir/src/PixelBlock.cpp.o CMakeFiles/codec.dir/src/QuantMatrix.cpp.o CMakeFiles/codec.dir/src/QuantFileParser.cpp.o CMakeFiles/codec.dir/src/Config.cpp.o CMakeFiles/codec.dir/src/Init.cpp.o CMakeFiles/codec.dir/src/MainCodec.cpp.o  -o codec 
