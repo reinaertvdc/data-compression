@@ -15,6 +15,7 @@ public:
     explicit ByteMatrix(unsigned char matrix[4][4]);
     virtual ~ByteMatrix() = default;
     bool isEmpty() { return this->empty; }
+    unsigned char *getBytes() { return (unsigned char *)this->matrix; }
 };
 
 

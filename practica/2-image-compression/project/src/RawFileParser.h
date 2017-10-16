@@ -12,6 +12,7 @@
 class RawFileParser {
 public:
     static ByteMatrix* parseFile(std::string filename, int width, int height);
+    static bool writeFile(std::string filename, ByteMatrix* matrix, int width, int height);
 };
 
 
