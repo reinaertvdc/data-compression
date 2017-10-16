@@ -26,27 +26,30 @@ std::vector<std::string> QuantFileParser::splitBySpaces(std::string line) {
     return ret;
 }
 
-QuantMatrix QuantFileParser::parseFile(std::string filename) {
+ByteMatrix QuantFileParser::parseFile(std::string filename) {
     std::fstream file;
     file.open(filename, std::ios::in);
     std::string line;
-    int mat[4][4];
+    unsigned char mat[4][4];
     if (!file.is_open()) {
-        return QuantMatrix();
+        return ByteMatrix();
     }
     int iRow = 0;
     while (getline(file, line)) {
         if (iRow >= 4) continue;
         std::vector<std::string> lineparts = QuantFileParser::splitBySpaces(line);
-        if (lineparts.size() < 4)
-            return QuantMatrix();
+        if (lineparts.size() < 4) {
+            file.close();
+            return ByteMatrix();
+        }
         int iCol = 0;
         for (std::string spart : lineparts) {
             if (iCol >= 4) continue;
-            mat[iRow][iCol] = std::stoi(spart);
+            mat[iRow][iCol] = static_cast<unsigned char>(std::stoi(spart));
             iCol++;
         }
         iRow++;
     }
-    return QuantMatrix(mat);
+    file.close();
+    return ByteMatrix(mat);
 }

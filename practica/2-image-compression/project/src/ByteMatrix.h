@@ -6,14 +6,14 @@
 #define PROJECT_QUANTMATRIX_H
 
 
-class QuantMatrix {
+class ByteMatrix {
 private:
-    int matrix[4][4];
+    unsigned char matrix[4][4];
     bool empty;
 public:
-    QuantMatrix();
-    explicit QuantMatrix(int matrix[4][4]);
-    virtual ~QuantMatrix() = default;
+    ByteMatrix();
+    explicit ByteMatrix(unsigned char matrix[4][4]);
+    virtual ~ByteMatrix() = default;
     bool isEmpty() { return this->empty; }
 };
 

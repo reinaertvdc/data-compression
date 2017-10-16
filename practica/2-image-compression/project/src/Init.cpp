@@ -50,7 +50,7 @@ Init::Init(int argc, char *const *argv) {
 }
 
 bool Init::initQuantMatrix() {
-    QuantMatrix matrix = QuantFileParser::parseFile(this->conf.getQuantMatrixFilePath());
+    ByteMatrix matrix = QuantFileParser::parseFile(this->conf.getQuantMatrixFilePath());
     return !matrix.isEmpty();
 }
 

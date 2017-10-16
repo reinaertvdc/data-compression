@@ -7,7 +7,7 @@
 
 
 #include "Config.h"
-#include "QuantMatrix.h"
+#include "ByteMatrix.h"
 
 class Init {
 private:
@@ -15,14 +15,14 @@ private:
     std::string confFileDir;
     std::string confFileName;
     Config conf;
-    QuantMatrix quantMatrix;
+    ByteMatrix quantMatrix;
     bool init(int argc, char *const *argv);
     bool initQuantMatrix();
 public:
     explicit Init(int argc, char *const *argv);
     bool isInitialized() const { return this->initialized; }
     const Config &getConfig() const;
-    const QuantMatrix &getQuantMatrix() const { return this->quantMatrix; }
+    const ByteMatrix &getQuantMatrix() const { return this->quantMatrix; }
 };
 
 
