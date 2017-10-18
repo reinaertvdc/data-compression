@@ -4,7 +4,7 @@
 
 int main(int argc, char *const argv[]) {
     std::cout << "DECODER" << std::endl << std::endl;
-    Init init(argc, argv);
+    Init init(argc, argv, true, false);
     if (!init.isInitialized()) {
         return 1;
     }

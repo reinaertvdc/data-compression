@@ -20,8 +20,9 @@ private:
     bool init(int argc, char *const *argv);
     bool initQuantMatrix();
     bool initRawFile();
+    void outputProgress(int step, int totalSteps, std::string status, std::string message);
 public:
-    explicit Init(int argc, char *const *argv);
+    explicit Init(int argc, char *const *argv, bool readQuantFile, bool readRawFile);
     bool isInitialized() const { return this->initialized; }
     const Config &getConfig() const;
     const ByteMatrix &getQuantMatrix() const { return this->quantMatrix; }
