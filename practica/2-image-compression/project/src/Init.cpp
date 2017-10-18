@@ -95,21 +95,21 @@ Init::Init(int argc, char *const *argv, bool readQuantFile, bool readRawFile, bo
 
 bool Init::initQuantMatrix() {
     if (this->conf.getQuantMatrixFilePath().empty()) return false;
-    ByteMatrix matrix = QuantFileParser::parseFile(this->conf.getQuantMatrixFilePath());
+    ValueBlock4x4 matrix = QuantFileParser::parseFile(this->conf.getQuantMatrixFilePath());
     return !matrix.isEmpty();
 }
 
 bool Init::initRawFile() {
     if (this->conf.getRawFilePath().empty()) return false;
-    this->rawImage = RawFileParser::parseFile(this->conf.getRawFilePath(), this->conf.getWidth(),
-                                              this->conf.getHeight());
+    this->rawImage = RawFileParser::parseFile8bit(this->conf.getRawFilePath(), this->conf.getWidth(),
+                                                  this->conf.getHeight());
     return this->rawImage != nullptr;
 }
 
 bool Init::initEncodedFile() {
     if (this->conf.getEncodedFilePath().empty()) return false;
-    this->tmpEncodedImage = RawFileParser::parseFile(this->conf.getEncodedFilePath(), this->conf.getWidth(),
-                                                     this->conf.getHeight());
+    this->tmpEncodedImage = RawFileParser::parseFile16bit(this->conf.getEncodedFilePath(), this->conf.getWidth(),
+                                                         this->conf.getHeight());
     return this->tmpEncodedImage != nullptr;
 }
 
@@ -117,6 +117,6 @@ void Init::outputProgress(int step, int totalSteps, std::string status, std::str
     std::cout << "[" << step << "/" << totalSteps << " " << status << "] " << message << std::endl;
 }
 
-ByteMatrix &Init::getRawImageBlock(int row, int col) {
+ValueBlock4x4 &Init::getRawImageBlock(int row, int col) {
     return this->rawImage[this->conf.getWidth() / 4 * row + col];
 }

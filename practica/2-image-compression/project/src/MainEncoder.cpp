@@ -18,5 +18,6 @@ int main(int argc, char *const argv[]) {
     }
 
     //TODO: remove temporary save
-    RawFileParser::writeFile(init.getConfig().getEncodedFilePath(), init.getRawImage(), init.getConfig().getWidth(), init.getConfig().getHeight());
+    RawFileParser::writeFile16bit(init.getConfig().getEncodedFilePath(), init.getRawImage(),
+                                  init.getConfig().getWidth(), init.getConfig().getHeight());
 }

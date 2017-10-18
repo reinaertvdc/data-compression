@@ -6,13 +6,15 @@
 #define PROJECT_RAWFILEPARSER_H
 
 
-#include "ByteMatrix.h"
+#include "ValueBlock4x4.h"
 #include <string>
 
 class RawFileParser {
 public:
-    static ByteMatrix* parseFile(std::string filename, int width, int height);
-    static bool writeFile(std::string filename, ByteMatrix* matrix, int width, int height);
+    static ValueBlock4x4* parseFile8bit(std::string filename, int width, int height);
+    static bool writeFile8bit(std::string filename, ValueBlock4x4 *matrix, int width, int height);
+    static ValueBlock4x4* parseFile16bit(std::string filename, int width, int height);
+    static bool writeFile16bit(std::string filename, ValueBlock4x4 *matrix, int width, int height);
 };
 
 

@@ -24,7 +24,8 @@ int main(int argc, char *const argv[]) {
     }
 
     //TODO: remove temporary save
-    RawFileParser::writeFile(init.getConfig().getEncodedFilePath(), init.getRawImage(), init.getConfig().getWidth(), init.getConfig().getHeight());
+    RawFileParser::writeFile16bit(init.getConfig().getEncodedFilePath(), init.getRawImage(),
+                                  init.getConfig().getWidth(), init.getConfig().getHeight());
 
     ////////////////////////////////////////////////////
     ////////////////////////////////////////////////////
@@ -40,22 +41,7 @@ int main(int argc, char *const argv[]) {
     }
 
     //TODO: remove temporary save
-    RawFileParser::writeFile(init.getConfig().getDecodedFilePath(), init.getRawImage(), init.getConfig().getWidth(), init.getConfig().getHeight());
+    RawFileParser::writeFile8bit(init.getConfig().getDecodedFilePath(), init.getRawImage(), init.getConfig().getWidth(),
+                                 init.getConfig().getHeight());
 
-    //TODO: remove testing code
-//    unsigned char tmp[4][4] = {{1,2,3,4},{5,6,7,8},{9,10,11,12},{13,14,15,16}};
-//    ByteMatrix tmp2(tmp);
-//    tmp2.applyDct();
-//    for (int i = 0; i < 16; i++) {
-//        std::cout << static_cast<int>((char)(tmp2.getBytes()[i]));
-//        if (i%4 == 3) std::cout << std::endl;
-//        else std::cout << "\t";
-//    }
-//    std::cout << std::endl;
-//    tmp2.applyInverseDct();
-//    for (int i = 0; i < 16; i++) {
-//        std::cout << static_cast<int>((char)(tmp2.getBytes()[i]));
-//        if (i%4 == 3) std::cout << "\n";
-//        else std::cout << "\t";
-//    }
 }

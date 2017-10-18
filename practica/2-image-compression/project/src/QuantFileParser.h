@@ -6,13 +6,13 @@
 #define PROJECT_QUANTFILEPARSER_H
 
 
-#include "ByteMatrix.h"
+#include "ValueBlock4x4.h"
 #include <string>
 #include <vector>
 
 class QuantFileParser {
 public:
-    static ByteMatrix parseFile(std::string filename);
+    static ValueBlock4x4 parseFile(std::string filename);
 private:
     static std::vector<std::string> splitBySpaces(std::string line);
 };

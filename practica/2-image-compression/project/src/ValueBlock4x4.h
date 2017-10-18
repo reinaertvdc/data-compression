@@ -6,19 +6,20 @@
 #define PROJECT_QUANTMATRIX_H
 
 
-class ByteMatrix {
+class ValueBlock4x4 {
 private:
-    unsigned char matrix[4][4];
+    short matrix[4][4];
     bool empty;
     static const double dctTransformMatrix[4][4];
 public:
-    ByteMatrix();
-    explicit ByteMatrix(unsigned char matrix[4][4]);
-    virtual ~ByteMatrix() = default;
+    ValueBlock4x4();
+    explicit ValueBlock4x4(short matrix[4][4]);
+    virtual ~ValueBlock4x4() = default;
     bool isEmpty() { return this->empty; }
-    unsigned char *getBytes() { return (unsigned char *)this->matrix; }
+    short *getData() { return (short *)this->matrix; }
     void applyDct();
     void applyInverseDct();
+    void setFilled() { this->empty = false; }
 };
 
 
