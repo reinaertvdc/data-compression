@@ -191,3 +191,6 @@ venv.bak/
 *.out
 *.app
 
+decoded.raw
+encoded.enc
+test.png

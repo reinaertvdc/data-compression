@@ -26,6 +26,8 @@ public:
     bool isInitialized() const { return this->initialized; }
     const Config &getConfig() const;
     const ByteMatrix &getQuantMatrix() const { return this->quantMatrix; }
+    ByteMatrix &getRawImageBlock(int row, int col);
+    ByteMatrix* getRawImage() { return this->rawImage; }
 };
 
 

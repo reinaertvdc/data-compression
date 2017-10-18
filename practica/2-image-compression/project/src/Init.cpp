@@ -102,3 +102,6 @@ void Init::outputProgress(int step, int totalSteps, std::string status, std::str
     std::cout << "[" << step << "/" << totalSteps << " " << status << "] " << message << std::endl;
 }
 
+ByteMatrix &Init::getRawImageBlock(int row, int col) {
+    return this->rawImage[this->conf.getWidth()/4*row+col];
+}
