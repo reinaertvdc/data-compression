@@ -24,7 +24,7 @@ ByteMatrix *RawFileParser::parseFile(std::string filename, int width, int height
 }
 
 bool RawFileParser::writeFile(std::string filename, ByteMatrix *matrix, int width, int height) {
-    std::ofstream file(filename, std::ios::out|std::ios::binary);
+    std::ofstream file(filename, std::ofstream::out|std::ofstream::binary);
     if (!file.is_open()) return false;
     for (int rowMajor = 0; rowMajor < height/4; rowMajor++) {
         for (int rowMinor = 0; rowMinor < 4; rowMinor++) {
