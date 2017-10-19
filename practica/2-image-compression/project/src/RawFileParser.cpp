@@ -100,7 +100,7 @@ bool RawFileParser::WriteFile16bit(std::string filename, short *array, int size)
 }
 
 short *RawFileParser::parseFile16bit(std::string filename, int size) {
-    auto *data = new short[size];
+    short *data = new short[size];
     std::ifstream file(filename, std::ios::in|std::ios::binary);
     if (!file.is_open()) return nullptr;
     char tmp[size*2];

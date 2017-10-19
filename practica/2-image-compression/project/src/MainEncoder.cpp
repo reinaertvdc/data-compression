@@ -17,7 +17,7 @@ int main(int argc, char *const argv[]) {
         for (int j = 0; j < init.getConfig().getWidth() / 4; j++) {
             init.getRawImageBlock(i, j).applyDct();
             init.getRawImageBlock(i, j).quantize(init.getQuantMatrix());
-            init.getRawImageBlock(i, j).zigzag(&zzOutput[(init.getConfig().getWidth() / 4 * i + j)]);
+            init.getRawImageBlock(i, j).zigzag(&zzOutput[(init.getConfig().getWidth() / 4 * i + j)*16]);
         }
     }
 
