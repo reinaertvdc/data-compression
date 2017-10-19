@@ -18,10 +18,11 @@ private:
     ValueBlock4x4 quantMatrix;
     ValueBlock4x4* rawImage;
     //TODO: remove tmp field
-    ValueBlock4x4* tmpEncodedImage;
+    short* tmpEncodedImage;
     bool init(int argc, char *const *argv);
     bool initQuantMatrix();
     bool initRawFile();
+    bool initEncodedFile();
     void outputProgress(int step, int totalSteps, std::string status, std::string message);
 public:
     explicit Init(int argc, char *const *argv, bool readQuantFile, bool readRawFile, bool readEncodedFile);
@@ -31,11 +32,7 @@ public:
     ValueBlock4x4 &getRawImageBlock(int row, int col);
     ValueBlock4x4* getRawImage() { return this->rawImage; }
     //TODO: remove tmp functions
-    ValueBlock4x4 &getTmpEncodedImageBlock(int row, int col) { return this->tmpEncodedImage[row*this->conf.getWidth()/4+col]; }
-    ValueBlock4x4* getTmpEncodedImage() { return this->tmpEncodedImage; }
-
-
-    bool initEncodedFile();
+    short* getTmpEncodedImage() { return this->tmpEncodedImage; }
 };
 
 

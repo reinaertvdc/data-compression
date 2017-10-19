@@ -85,3 +85,29 @@ bool RawFileParser::writeFile16bit(std::string filename, ValueBlock4x4 *matrix, 
     file.close();
     return true;
 }
+
+bool RawFileParser::WriteFile16bit(std::string filename, short *array, int size) {
+    std::ofstream file(filename, std::ofstream::out|std::ofstream::binary);
+    if (!file.is_open()) return false;
+    char tmp[size*2];
+    for (int i = 0; i < size; i++) {
+        tmp[2*i+1] = (char)((array[i] & 0xff00) >> 8);
+        tmp[2*i] = (char)(array[i] & 0x00ff);
+    }
+    file.write(tmp, size*2*sizeof(char));
+    file.close();
+    return true;
+}
+
+short *RawFileParser::parseFile16bit(std::string filename, int size) {
+    auto *data = new short[size];
+    std::ifstream file(filename, std::ios::in|std::ios::binary);
+    if (!file.is_open()) return nullptr;
+    char tmp[size*2];
+    file.read(tmp, size*2*sizeof(char));
+    file.close();
+    for (int i = 0; i < size; i++) {
+        data[i] = ((short)tmp[i*2]&0x00ff)|((((short)tmp[i*2+1])&0x00ff)<<8);
+    }
+    return data;
+}

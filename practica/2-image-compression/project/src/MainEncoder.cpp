@@ -10,15 +10,19 @@ int main(int argc, char *const argv[]) {
         return 1;
     }
 
-    // DCT transform and quantization
+    short zzOutput[init.getConfig().getWidth() * init.getConfig().getHeight()];
+
+    // DCT transform and quantization and zigzag convert
     for (int i = 0; i < init.getConfig().getHeight() / 4; i++) {
         for (int j = 0; j < init.getConfig().getWidth() / 4; j++) {
             init.getRawImageBlock(i, j).applyDct();
             init.getRawImageBlock(i, j).quantize(init.getQuantMatrix());
+            init.getRawImageBlock(i, j).zigzag(&zzOutput[(init.getConfig().getWidth() / 4 * i + j)]);
         }
     }
 
-    //TODO: remove temporary save
-    RawFileParser::writeFile16bit(init.getConfig().getEncodedFilePath(), init.getRawImage(),
-                                  init.getConfig().getWidth(), init.getConfig().getHeight());
+    //TODO: remove temporary file write
+    RawFileParser::WriteFile16bit(init.getConfig().getEncodedFilePath(), zzOutput,
+                                  init.getConfig().getWidth() * init.getConfig().getHeight());
+
 }

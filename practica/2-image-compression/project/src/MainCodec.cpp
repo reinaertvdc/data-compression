@@ -20,7 +20,7 @@ int main(int argc, char *const argv[]) {
     for (int i = 0; i < init.getConfig().getHeight() / 4; i++) {
         for (int j = 0; j < init.getConfig().getWidth() / 4; j++) {
             init.getRawImageBlock(i, j).applyDct();
-
+            init.getRawImageBlock(i, j).quantize(init.getQuantMatrix());
         }
     }
 
@@ -37,6 +37,7 @@ int main(int argc, char *const argv[]) {
     // inverse DCT transform
     for (int i = 0; i < init.getConfig().getHeight() / 4; i++) {
         for (int j = 0; j < init.getConfig().getWidth() / 4; j++) {
+            init.getRawImageBlock(i, j).deQuantize(init.getQuantMatrix());
             init.getRawImageBlock(i, j).applyInverseDct();
         }
     }

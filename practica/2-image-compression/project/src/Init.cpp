@@ -95,8 +95,8 @@ Init::Init(int argc, char *const *argv, bool readQuantFile, bool readRawFile, bo
 
 bool Init::initQuantMatrix() {
     if (this->conf.getQuantMatrixFilePath().empty()) return false;
-    ValueBlock4x4 matrix = QuantFileParser::parseFile(this->conf.getQuantMatrixFilePath());
-    return !matrix.isEmpty();
+    this->quantMatrix = QuantFileParser::parseFile(this->conf.getQuantMatrixFilePath());
+    return !this->quantMatrix.isEmpty();
 }
 
 bool Init::initRawFile() {
@@ -108,8 +108,8 @@ bool Init::initRawFile() {
 
 bool Init::initEncodedFile() {
     if (this->conf.getEncodedFilePath().empty()) return false;
-    this->tmpEncodedImage = RawFileParser::parseFile16bit(this->conf.getEncodedFilePath(), this->conf.getWidth(),
-                                                         this->conf.getHeight());
+    this->tmpEncodedImage = RawFileParser::parseFile16bit(this->conf.getEncodedFilePath(),
+                                                          this->conf.getWidth() * this->conf.getHeight());
     return this->tmpEncodedImage != nullptr;
 }
 
