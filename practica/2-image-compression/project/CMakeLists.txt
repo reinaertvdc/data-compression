@@ -3,7 +3,7 @@ project(project)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(SOURCE_FILES src/configreader.cpp src/BitStream.cpp src/ValueBlock4x4.cpp src/QuantFileParser.cpp src/Config.cpp src/Init.cpp src/RawFileParser.cpp src/RawFileParser.h)
+set(SOURCE_FILES src/configreader.cpp src/BitStream.cpp src/ValueBlock4x4.cpp src/QuantFileParser.cpp src/Config.cpp src/Init.cpp src/RawFileParser.cpp src/RawFileParser.h src/RleCodec.cpp src/RleCodec.h)
 set(SOURCE_FILES_ENCODER src/MainEncoder.cpp)
 set(SOURCE_FILES_DECODER src/MainDecoder.cpp)
 set(SOURCE_FILES_CODEC src/MainCodec.cpp)

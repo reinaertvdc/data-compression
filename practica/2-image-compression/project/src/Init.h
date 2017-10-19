@@ -17,8 +17,9 @@ private:
     Config conf;
     ValueBlock4x4 quantMatrix;
     ValueBlock4x4* rawImage;
-    //TODO: remove tmp field
+    //TODO: remove tmp fields
     short* tmpEncodedImage;
+    int tmpEncodedImageFileSize;
     bool init(int argc, char *const *argv);
     bool initQuantMatrix();
     bool initRawFile();
@@ -33,6 +34,7 @@ public:
     ValueBlock4x4* getRawImage() { return this->rawImage; }
     //TODO: remove tmp functions
     short* getTmpEncodedImage() { return this->tmpEncodedImage; }
+    int getTmpEncodedImageFileSize() { return this->tmpEncodedImageFileSize; }
 };
 
 

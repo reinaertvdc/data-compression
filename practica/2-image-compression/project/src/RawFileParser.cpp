@@ -2,6 +2,7 @@
 #include <fstream>
 #include <cstring>
 #include <iostream>
+#include <vector>
 #include "RawFileParser.h"
 
 ValueBlock4x4 *RawFileParser::parseFile8bit(std::string filename, int width, int height) {
@@ -99,15 +100,21 @@ bool RawFileParser::WriteFile16bit(std::string filename, short *array, int size)
     return true;
 }
 
-short *RawFileParser::parseFile16bit(std::string filename, int size) {
-    short *data = new short[size];
+short *RawFileParser::parseFile16bit(std::string filename, int &size) {
+    std::vector<short> data;
     std::ifstream file(filename, std::ios::in|std::ios::binary);
     if (!file.is_open()) return nullptr;
-    char tmp[size*2];
-    file.read(tmp, size*2*sizeof(char));
-    file.close();
-    for (int i = 0; i < size; i++) {
-        data[i] = ((short)tmp[i*2]&0x00ff)|((((short)tmp[i*2+1])&0x00ff)<<8);
+    while(!file.eof()) {
+        char tmp[4];
+        file.read(tmp, 4*sizeof(char));
+        short v1 = ((short)tmp[0]&0x00ff)|((((short)tmp[1])&0x00ff)<<8);
+        short v2 = ((short)tmp[2]&0x00ff)|((((short)tmp[3])&0x00ff)<<8);
+        data.emplace_back(v1);
+        data.emplace_back(v2);
     }
-    return data;
+    file.close();
+    size = static_cast<int>(data.size());
+    short* dataArray = new short[size];
+    memcpy(dataArray, &data[0], sizeof(short)*size);
+    return dataArray;
 }

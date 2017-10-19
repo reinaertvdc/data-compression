@@ -2,6 +2,7 @@
 #include <iostream>
 #include "Init.h"
 #include "RawFileParser.h"
+#include "RleCodec.h"
 
 int main(int argc, char *const argv[]) {
     std::cout << "CODEC" << std::endl << std::endl;
@@ -45,12 +46,5 @@ int main(int argc, char *const argv[]) {
     //TODO: remove temporary save
     RawFileParser::writeFile8bit(init.getConfig().getDecodedFilePath(), init.getRawImage(), init.getConfig().getWidth(),
                                  init.getConfig().getHeight());
-
-//    short val = 5;
-//    char tmp[2];
-//    tmp[1] = (char)((val & 0xff00) >> 8);
-//    tmp[0] = (char)(val & 0x00ff);
-//    val = ((short)tmp[0]&0x00ff)|((((short)tmp[1])&0x00ff)<<8);
-//    std::cout << val << std::endl;
 
 }

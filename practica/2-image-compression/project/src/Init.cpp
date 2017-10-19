@@ -109,7 +109,7 @@ bool Init::initRawFile() {
 bool Init::initEncodedFile() {
     if (this->conf.getEncodedFilePath().empty()) return false;
     this->tmpEncodedImage = RawFileParser::parseFile16bit(this->conf.getEncodedFilePath(),
-                                                          this->conf.getWidth() * this->conf.getHeight());
+                                                          this->tmpEncodedImageFileSize);
     return this->tmpEncodedImage != nullptr;
 }
 
