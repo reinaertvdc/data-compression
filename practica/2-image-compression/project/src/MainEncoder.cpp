@@ -10,10 +10,11 @@ int main(int argc, char *const argv[]) {
         return 1;
     }
 
-    // DCT transform
+    // DCT transform and quantization
     for (int i = 0; i < init.getConfig().getHeight() / 4; i++) {
         for (int j = 0; j < init.getConfig().getWidth() / 4; j++) {
             init.getRawImageBlock(i, j).applyDct();
+            init.getRawImageBlock(i, j).quantize(init.getQuantMatrix());
         }
     }
 

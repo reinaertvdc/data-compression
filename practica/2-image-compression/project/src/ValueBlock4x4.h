@@ -15,11 +15,13 @@ public:
     ValueBlock4x4();
     explicit ValueBlock4x4(short matrix[4][4]);
     virtual ~ValueBlock4x4() = default;
+    void setFilled() { this->empty = false; }
     bool isEmpty() { return this->empty; }
     short *getData() { return (short *)this->matrix; }
     void applyDct();
     void applyInverseDct();
-    void setFilled() { this->empty = false; }
+    void quantize(const ValueBlock4x4 &quant);
+    void deQuantize(const ValueBlock4x4 &quant);
 };
 
 

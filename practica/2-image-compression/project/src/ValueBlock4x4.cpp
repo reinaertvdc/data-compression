@@ -4,10 +4,13 @@
 #include <cmath>
 #include "ValueBlock4x4.h"
 
-const double ValueBlock4x4::dctTransformMatrix[4][4] = {{0.5,0.5,0.5,0.5},{0.653,0.271,-0.271,-0.653},{0.5,-0.5,-0.5,0.5},{0.271,-0.653,0.653,-0.271}};
+const double ValueBlock4x4::dctTransformMatrix[4][4] = {{0.5,   0.5,    0.5,    0.5},
+                                                        {0.653, 0.271,  -0.271, -0.653},
+                                                        {0.5,   -0.5,   -0.5,   0.5},
+                                                        {0.271, -0.653, 0.653,  -0.271}};
 
 ValueBlock4x4::ValueBlock4x4(short matrix[4][4]) : empty(false) {
-    std::memcpy(this->matrix, matrix, sizeof(short)*16);
+    std::memcpy(this->matrix, matrix, sizeof(short) * 16);
 }
 
 ValueBlock4x4::ValueBlock4x4() : empty(true) {}
@@ -41,7 +44,10 @@ void ValueBlock4x4::applyInverseDct() {
     if (this->isEmpty()) {
         return;
     }
-    double tmp[4][4] = {{0.0,0.0,0.0,0.0},{0.0,0.0,0.0,0.0},{0.0,0.0,0.0,0.0},{0.0,0.0,0.0,0.0}};
+    double tmp[4][4] = {{0.0, 0.0, 0.0, 0.0},
+                        {0.0, 0.0, 0.0, 0.0},
+                        {0.0, 0.0, 0.0, 0.0},
+                        {0.0, 0.0, 0.0, 0.0}};
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
             double sum = 0.0;
@@ -58,6 +64,23 @@ void ValueBlock4x4::applyInverseDct() {
                 sum += tmp[i][k] * dctTransformMatrix[k][j];
             }
             this->matrix[i][j] = static_cast<short>(round(sum));
+        }
+    }
+}
+
+void ValueBlock4x4::quantize(const ValueBlock4x4 &quant) {
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            this->matrix[i][j] = static_cast<short>(static_cast<float>(this->matrix[i][j]) / static_cast<float>(quant.matrix[i][j]));
+        }
+        std::cout << std::endl;
+    }
+}
+
+void ValueBlock4x4::deQuantize(const ValueBlock4x4 &quant) {
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            this->matrix[i][j] *= quant.matrix[i][j];
         }
     }
 }
