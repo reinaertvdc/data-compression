@@ -191,6 +191,11 @@ venv.bak/
 *.out
 *.app
 
-decoded.raw
-encoded.enc
-test.png
+################################################################################
+
+settings.conf
+
+*.in.png
+*.out.png
+*.raw
+*.enc
