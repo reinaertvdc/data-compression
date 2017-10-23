@@ -39,7 +39,7 @@ uint8_t *StorageFormatCodec::toStorageFormat(int16_t *data, int size, int &outSi
             }
         }
     }
-    outBits.put(4, quantMatrixBits);
+    outBits.put(4, static_cast<uint8_t>(quantMatrixBits - 1));
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
             uint16_t val = static_cast<uint16_t>(quant.getValue(i, j));
@@ -47,15 +47,46 @@ uint8_t *StorageFormatCodec::toStorageFormat(int16_t *data, int size, int &outSi
         }
     }
 
-//    for (int iBlock = 0; iBlock < width/4; iBlock++) {
-//        for (int jBlock = 0; jBlock < width/4; jBlock++) {
-//
-//        }
-//    }
+    int iData = 0;
+    if (rle) {
+        for (int iBlock = 0; iBlock < width / 4; iBlock++) {
+            for (int jBlock = 0; jBlock < width / 4; jBlock++) {
+                uint8_t valCount = static_cast<uint8_t>(data[iData++] - 1);
+                outBits.put(4, valCount);
+                valCount++;
+                if (valCount == 0) {
+                    outBits.put(4, 0);
+                    continue;
+                }
+                short minVal = data[iData];
+                short maxVal = data[iData];
+                for (int i = 1; i < static_cast<int>(valCount); i++) {
+                    if (data[iData+i] < minVal) minVal = data[iData+i];
+                    if (data[iData+i] > maxVal) maxVal = data[iData+1];
+                }
+                unsigned short range = static_cast<unsigned short>(maxVal - minVal);
+                uint8_t valBitSize = 1;
+                unsigned short valSize = 2;
+                while (range <= valSize) {
+                    valBitSize++;
+                    valSize *= 2;
+                }
+                outBits.put(4, static_cast<uint8_t>(valBitSize - 1));
+                for (int i = 1; i < static_cast<int>(valCount); i++) {
+                    outBits.put(valBitSize, (uint16_t)(static_cast<int16_t>(data[iData + i])));
+                }
+                iData += valCount;
+            }
+        }
+    }
+    else {
+        //TODO
+    }
 
     // copy bytes to memory and return pointer
 
     outSize = (outBits.get_position()/8)+(outBits.get_position()%8==0?0:1);
+    std::cout << outSize << std::endl;
     uint8_t * out = new uint8_t[outSize];
     memcpy(out, outBits.get_buffer(), sizeof(uint8_t)*outSize);
     return out;
@@ -85,12 +116,14 @@ int16_t *StorageFormatCodec::fromStorageFormat(uint8_t *data, int size, int &out
 
     // quantization matrix
 
-    uint8_t quantMatrixBits = (uint8_t )inBits.get(4);
+    uint8_t quantMatrixBits = (uint8_t)((uint8_t )inBits.get(4) + 1);
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
             quant.getData()[i*4+j] = static_cast<short>((uint16_t)inBits.get(quantMatrixBits));
         }
     }
+
+
 
     return nullptr;
 }

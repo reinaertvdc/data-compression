@@ -31,7 +31,7 @@ int main(int argc, char *const argv[]) {
     }
 
     int tmp;
-    uint8_t* tmp2 = StorageFormatCodec::toStorageFormat(nullptr, 0, tmp, init.getConfig().getWidth(), init.getConfig().getHeight(),
+    uint8_t* tmp2 = StorageFormatCodec::toStorageFormat(rleOutput, iRleTmpOut, tmp, init.getConfig().getWidth(), init.getConfig().getHeight(),
                                         init.getConfig().getApplyRle(),
                                         const_cast<ValueBlock4x4 &>(init.getQuantMatrix()));
     int tmp3;

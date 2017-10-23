@@ -19,7 +19,7 @@ BLOCK
 
 
 (if rle)
-4		unsigned	n = amount of non-zero values
+4		unsigned	n + 1 = amount of non-zero values
 
 4		unsigned	b = amount of bits used per value
 
