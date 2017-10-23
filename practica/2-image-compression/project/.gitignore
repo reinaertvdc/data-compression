@@ -197,5 +197,7 @@ settings.conf
 
 *.in.png
 *.out.png
+*.diff.png
 *.raw
 *.enc
+*.

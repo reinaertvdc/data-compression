@@ -3,6 +3,8 @@ import os
 from typing import Optional, Tuple
 import struct
 import subprocess
+import sys
+import re
 
 
 PROMPT = '... '
@@ -15,6 +17,7 @@ TEST_DIR = 'test'
 IN_EXTENSIONS = {'jpg', 'png'}
 IN_EXTENSION = 'in'
 OUT_EXTENSION = 'out'
+DIFF_EXTENSION = 'diff'
 
 
 def build_all() -> None:
@@ -83,6 +86,13 @@ def main() -> None:
     if not os.path.exists(TEST_DIR):
         os.makedirs(TEST_DIR)
 
+    if len(sys.argv) >= 2 and sys.argv[1] == 'clear':
+        for f in os.listdir(TEST_DIR):
+            if re.search('.*\.in\..*', f) or re.search('.*\.out\..*', f) or re.search('.*\.diff\..*', f) or re.search('.*\.raw', f) or re.search('.*\.enc', f):
+                os.remove(os.path.join(TEST_DIR, f))
+        
+        return
+
     build_all()
 
     for filename in os.listdir(TEST_DIR):
@@ -121,6 +131,14 @@ def main() -> None:
                 decode()
                 convert_to_image(base_path + '.' + OUT_EXTENSION, base_path + '.' +
                                  OUT_EXTENSION, dimensions)
+                
+                shell_run('blink-diff --output %s.%s.png %s.%s.png %s.%s.png' % (
+                    base_path, DIFF_EXTENSION,
+                    base_path, IN_EXTENSION,
+                    base_path, OUT_EXTENSION,
+                ))
+
+                shell_run('eog %s.%s.png&' % (base_path, DIFF_EXTENSION))
 
 
 def shell_run(command: str) -> None:
