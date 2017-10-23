@@ -118,3 +118,11 @@ short *RawFileParser::parseFile16bit(std::string filename, int &size) {
     memcpy(dataArray, &data[0], sizeof(short)*size);
     return dataArray;
 }
+
+bool RawFileParser::writeFile8bit(std::string filename, uint8_t *data, int size) {
+    std::ofstream file(filename, std::ofstream::out|std::ofstream::binary);
+    if (!file.is_open()) return false;
+    file.write(reinterpret_cast<const char *>(data), size * sizeof(char));
+    file.close();
+    return true;
+}

@@ -30,26 +30,11 @@ int main(int argc, char *const argv[]) {
         }
     }
 
-    int tmp;
-    uint8_t* tmp2 = StorageFormatCodec::toStorageFormat(nullptr, 0, tmp, init.getConfig().getWidth(), init.getConfig().getHeight(),
-                                        init.getConfig().getApplyRle(),
-                                        const_cast<ValueBlock4x4 &>(init.getQuantMatrix()));
-    int tmp3;
-    int w;
-    int h;
-    bool rle;
-    ValueBlock4x4 tmpMat;
-    StorageFormatCodec::fromStorageFormat(tmp2, tmp, tmp3, w, h, rle, tmpMat);
-    std::cout << w << "x" << h << std::endl;
-    std::cout << rle << std::endl;
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            std::cout << tmpMat.getData()[i*4+j] << "\t";
-        }
-        std::cout << std::endl;
-    }
+    int size;
+    uint8_t *data = StorageFormatCodec::toStorageFormat(rleOutput, iRleTmpOut, size, init.getConfig().getWidth(),
+                                                        init.getConfig().getHeight(), init.getConfig().getApplyRle(),
+                                                        const_cast<ValueBlock4x4 &>(init.getQuantMatrix()));
 
-    //TODO: remove temporary file write
-    RawFileParser::WriteFile16bit(init.getConfig().getEncodedFilePath(), rleOutput, iRleTmpOut);
+    RawFileParser::writeFile8bit(init.getConfig().getEncodedFilePath(), data, size);
 
 }

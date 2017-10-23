@@ -13,6 +13,7 @@ class RawFileParser {
 public:
     static ValueBlock4x4* parseFile8bit(std::string filename, int width, int height);
     static bool writeFile8bit(std::string filename, ValueBlock4x4 *matrix, int width, int height);
+    static bool writeFile8bit(std::string filename, uint8_t *data, int size);
     static ValueBlock4x4* parseFile16bit(std::string filename, int width, int height);
     static short* parseFile16bit(std::string filename, int &size);
     static bool writeFile16bit(std::string filename, ValueBlock4x4 *matrix, int width, int height);
