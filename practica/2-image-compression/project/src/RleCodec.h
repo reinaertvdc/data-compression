@@ -9,7 +9,7 @@
 class RleCodec {
 public:
     static short *rleEncode(short* in, int size, int &outSize);
-    static short *rleDecode(short* in, int minOutSize, int maxOutSize, int &outSize, int &inSizeUsed);
+    static short *rleDecode(short* in, int outSize, int &inSizeUsed);
 };
 
 

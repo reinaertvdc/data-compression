@@ -20,7 +20,7 @@ int main(int argc, char *const argv[]) {
         for (int j = 0; j < init.getConfig().getWidth() / 4; j++) {
             int tmpOutSize;
             int tmpInSizeUsed;
-            short* zzPattern = RleCodec::rleDecode(&(init.getTmpEncodedImage()[indexTmpEncodedImage]), 16, 16, tmpOutSize, tmpInSizeUsed);
+            short* zzPattern = RleCodec::rleDecode(&(init.getTmpEncodedImage()[indexTmpEncodedImage]), 16, tmpInSizeUsed);
             ValueBlock4x4 tmp(zzPattern);
             delete[] zzPattern;
             indexTmpEncodedImage += tmpInSizeUsed;

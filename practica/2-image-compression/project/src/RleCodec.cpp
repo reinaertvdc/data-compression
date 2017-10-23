@@ -8,58 +8,31 @@
 #include "RleCodec.h"
 
 short *RleCodec::rleEncode(short *in, int size, int &outSize) {
-    std::vector<short> tmpOut;
-    int zeroCount = 0;
-    for (int i = 0; i < size; i++) {
-        if (in[i] == 0) {
-            zeroCount++;
-        }
-        else {
-            tmpOut.emplace_back(zeroCount);
-            tmpOut.emplace_back(in[i]);
-            zeroCount = 0;
-        }
+    int nonZeroSize = size;
+    while (nonZeroSize > 0 && in[nonZeroSize] != 0) {
+        nonZeroSize--;
     }
-    tmpOut.emplace_back(0);
-    tmpOut.emplace_back(0);
+    std::vector<short> tmpOut;
+    tmpOut.emplace_back(nonZeroSize);
+    for (int i = 0; i < nonZeroSize; i++) {
+        tmpOut.emplace_back(in[i]);
+    }
     outSize = static_cast<int>(tmpOut.size());
-    auto * out = new short[tmpOut.size()];
+    auto * out = new short[outSize];
     memcpy(out, &tmpOut[0], sizeof(short)*outSize);
     return out;
 }
 
-short *RleCodec::rleDecode(short *in, int minOutSize, int maxOutSize, int &outSize, int &inSizeUsed) {
-    outSize = 0;
+short *RleCodec::rleDecode(short *in, int outSize, int &inSizeUsed) {
     inSizeUsed = 0;
-    while (!(in[inSizeUsed]==0&&in[inSizeUsed+1]==0)) {
-        outSize += in[inSizeUsed] + 1;
-        inSizeUsed += 2;
+    int size = in[0];
+    inSizeUsed += 1 + size;
+    short* out = new short[outSize];
+    for (int i = 0; i < size; i++) {
+        out[i] = in[i+1];
     }
-    inSizeUsed += 2;
-    if (outSize < minOutSize) {
-        outSize = minOutSize;
-    }
-    if (outSize > maxOutSize) {
-        outSize = maxOutSize;
-    }
-    short * out = new short[outSize];
-    int iOut = 0;
-    for (int iIn = 0; iIn < inSizeUsed-2; iIn+=2) {
-        for (int i = 0; i < in[iIn]; i++) {
-            if (iOut >= maxOutSize) {
-                break;
-            }
-            out[iOut++] = 0;
-        }
-        if (iOut >= maxOutSize) {
-            break;
-        }
-        out[iOut++] = in[iIn+1];
-    }
-    if (iOut < outSize) {
-        for (;iOut < outSize; iOut++) {
-            out[iOut] = 0;
-        }
+    for (int i = size; i < outSize; i++) {
+        out[i] = in[i];
     }
     return out;
 }
