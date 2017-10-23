@@ -11,7 +11,7 @@ USE_RLE = True
 CONFIG_PATH = 'settings.conf'
 QUANT_MATRIX_PATH = 'matrix.txt'
 BUILD_DIR = 'cmake-build-debug'
-TEST_DIR = '../test'
+TEST_DIR = 'test'
 IN_EXTENSIONS = {'jpg', 'png'}
 IN_EXTENSION = 'in'
 OUT_EXTENSION = 'out'
@@ -80,6 +80,9 @@ def get_image_dimensions(file_path: str) -> Optional[Tuple[int, int]]:
 
 
 def main() -> None:
+    if not os.path.exists(TEST_DIR):
+        os.makedirs(TEST_DIR)
+
     build_all()
 
     for filename in os.listdir(TEST_DIR):
