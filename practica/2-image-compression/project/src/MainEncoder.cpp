@@ -4,6 +4,7 @@
 #include "Init.h"
 #include "RawFileParser.h"
 #include "RleCodec.h"
+#include "StorageFormatCodec.h"
 
 int main(int argc, char *const argv[]) {
     std::cout << "ENCODER" << std::endl << std::endl;
@@ -12,7 +13,7 @@ int main(int argc, char *const argv[]) {
         return 1;
     }
 
-    short rleTmpOutput[2 * init.getConfig().getWidth() * init.getConfig().getHeight() + 2];
+    short rleOutput[init.getConfig().getWidth() * init.getConfig().getHeight() * (4 * 4 + 1) / (4 * 4)];
     int iRleTmpOut = 0;
     short zzOutput[16];
 
@@ -23,19 +24,32 @@ int main(int argc, char *const argv[]) {
             init.getRawImageBlock(i, j).quantize(init.getQuantMatrix());
             init.getRawImageBlock(i, j).zigzag(zzOutput);
             int len;
-            short* rle = RleCodec::rleEncode(zzOutput, 16, len);
-            memcpy(&rleTmpOutput[iRleTmpOut], rle, len*sizeof(short));
+            short *rle = RleCodec::rleEncode(zzOutput, 16, len);
+            memcpy(&rleOutput[iRleTmpOut], rle, len * sizeof(short));
             iRleTmpOut += len;
         }
     }
 
-    // Copy rle encoded shorts to smaller array
-    auto * rleOutput = new short[iRleTmpOut];
-    memcpy(rleOutput, rleTmpOutput, iRleTmpOut*sizeof(short));
+    int tmp;
+    uint8_t* tmp2 = StorageFormatCodec::toStorageFormat(nullptr, 0, tmp, init.getConfig().getWidth(), init.getConfig().getHeight(),
+                                        init.getConfig().getApplyRle(),
+                                        const_cast<ValueBlock4x4 &>(init.getQuantMatrix()));
+    int tmp3;
+    int w;
+    int h;
+    bool rle;
+    ValueBlock4x4 tmpMat;
+    StorageFormatCodec::fromStorageFormat(tmp2, tmp, tmp3, w, h, rle, tmpMat);
+    std::cout << w << "x" << h << std::endl;
+    std::cout << rle << std::endl;
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            std::cout << tmpMat.getData()[i*4+j] << "\t";
+        }
+        std::cout << std::endl;
+    }
 
     //TODO: remove temporary file write
     RawFileParser::WriteFile16bit(init.getConfig().getEncodedFilePath(), rleOutput, iRleTmpOut);
-
-    delete[] rleOutput;
 
 }
