@@ -49,33 +49,34 @@ uint8_t *StorageFormatCodec::toStorageFormat(int16_t *data, int size, int &outSi
 
     int iData = 0;
     if (rle) {
-        for (int iBlock = 0; iBlock < width / 4; iBlock++) {
+        for (int iBlock = 0; iBlock < height / 4; iBlock++) {
             for (int jBlock = 0; jBlock < width / 4; jBlock++) {
-                uint8_t valCount = static_cast<uint8_t>(data[iData++] - 1);
+                uint8_t valCount = static_cast<uint8_t>(static_cast<short>(data[iData++]) - 1);
                 outBits.put(4, valCount);
                 valCount++;
                 if (valCount == 0) {
-                    outBits.put(4, 0);
+                    uint8_t tmp = 0x00;
+                    outBits.put(4, tmp);
                     continue;
                 }
-                short minVal = data[iData];
-                short maxVal = data[iData];
-                for (int i = 1; i < static_cast<int>(valCount); i++) {
-                    if (data[iData+i] < minVal) minVal = data[iData+i];
-                    if (data[iData+i] > maxVal) maxVal = data[iData+1];
+                int minVal = static_cast<int>(data[iData]);
+                int maxVal = static_cast<int>(data[iData]);
+                for (int i = 0; i < static_cast<int>(valCount); i++) {
+                    if (static_cast<int>(data[iData+i]) < minVal) minVal = static_cast<int>(data[iData+i]);
+                    if (static_cast<int>(data[iData+i]) > maxVal) maxVal = static_cast<int>(data[iData+i]);
                 }
-                unsigned short range = static_cast<unsigned short>(maxVal - minVal);
-                uint8_t valBitSize = 1;
-                unsigned short valSize = 2;
+                int range = maxVal - minVal;
+                uint8_t valBitSize = static_cast<uint8_t >(1);
+                int valSize = 2;
                 while (range <= valSize) {
                     valBitSize++;
                     valSize *= 2;
                 }
-                outBits.put(4, static_cast<uint8_t>(valBitSize - 1));
+                outBits.put(4, static_cast<uint8_t>(static_cast<int>(valBitSize) - 1));
                 for (int i = 1; i < static_cast<int>(valCount); i++) {
                     outBits.put(valBitSize, (uint16_t)(static_cast<int16_t>(data[iData + i])));
                 }
-                iData += valCount;
+                iData += static_cast<int>(valCount);
             }
         }
     }
