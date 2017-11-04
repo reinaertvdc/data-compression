@@ -9,7 +9,7 @@
 
 uint8_t *StorageFormatCodec::toStorageFormat(int16_t *data, int size, int &outSize, int width, int height, bool rle, const ValueBlock4x4 &quant) {
 
-    util::BitStreamWriter outBits(size*2+64);
+    util::BitStreamWriter outBits(size*2*18/16+256);
 
     // width and height
 
@@ -42,36 +42,53 @@ uint8_t *StorageFormatCodec::toStorageFormat(int16_t *data, int size, int &outSi
         }
     }
 
+    // data
+
     int iData = 0;
     if (rle) {
         for (int iBlock = 0; iBlock < height / 4; iBlock++) {
             for (int jBlock = 0; jBlock < width / 4; jBlock++) {
-                uint8_t valCount = static_cast<uint8_t>(static_cast<short>(data[iData++]) - 1);
-                outBits.put(4, valCount);
-                valCount++;
+                int valCount = static_cast<int>(data[iData++]);
                 if (valCount == 0) {
                     uint8_t tmp = 0x00;
-                    outBits.put(4, tmp);
+                    outBits.put(8, tmp);
                     continue;
                 }
+                uint8_t tmp = static_cast<uint8_t>(valCount - 1);
+                outBits.put(4, tmp);
                 int minVal = static_cast<int>(data[iData]);
                 int maxVal = static_cast<int>(data[iData]);
-                for (int i = 0; i < static_cast<int>(valCount); i++) {
+                for (int i = 0; i < valCount; i++) {
                     if (static_cast<int>(data[iData+i]) < minVal) minVal = static_cast<int>(data[iData+i]);
                     if (static_cast<int>(data[iData+i]) > maxVal) maxVal = static_cast<int>(data[iData+i]);
                 }
                 int range = maxVal - minVal;
-                uint8_t valBitSize = static_cast<uint8_t >(1);
+                int valBitSize = 1;
                 int valSize = 2;
                 while (range <= valSize) {
                     valBitSize++;
                     valSize *= 2;
                 }
-                outBits.put(4, static_cast<uint8_t>(static_cast<int>(valBitSize) - 1));
-                for (int i = 1; i < static_cast<int>(valCount); i++) {
-                    outBits.put(valBitSize, (uint16_t)(static_cast<int16_t>(data[iData + i])));
+                outBits.put(4, static_cast<uint8_t>(valBitSize));
+                int offset = minVal;
+                if (offset < 0) {
+                    outBits.put_bit(static_cast<uint8_t>(1));
+                    offset = -offset;
                 }
-                iData += static_cast<int>(valCount);
+                else {
+                    outBits.put_bit(static_cast<uint8_t>(0));
+                }
+                int offsetBitSize = 1;
+                int offsetSize = 2;
+                while (offset <= offsetSize) {
+                    offsetBitSize++;
+                    offsetSize *= 2;
+                }
+                outBits.put(4, static_cast<uint8_t>(offsetBitSize-1));
+                for (int i = 1; i < valCount; i++) {
+                    outBits.put(valBitSize, static_cast<uint16_t>(static_cast<int>(data[iData + i])-minVal));
+                }
+                iData += valCount;
             }
         }
     }
@@ -122,13 +139,33 @@ int16_t *StorageFormatCodec::fromStorageFormat(uint8_t *data, int size, int &out
         }
     }
     quant.setFilled();
-
     std::cout << "quantization matrix:" << std::endl;
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
             std::cout << quant.getValue(i, j) << "\t";
         }
         std::cout << std::endl;
+    }
+
+    // data
+
+    int16_t tmpData[hOut*wOut*18/16];
+    int iTmpData = 0;
+    if (rleOut) {
+        for (int iBlock = 0; iBlock < hOut / 4; iBlock++) {
+            for (int jBlock = 0; jBlock < wOut / 4; jBlock++) {
+                int valCount = static_cast<int>(inBits.get(4)) + 1;
+                int valBitSize = static_cast<int>(inBits.get(4));
+                if (valCount == 0 && valBitSize == 0) {
+                    tmpData[iTmpData++] = static_cast<int16_t>(0);
+                    continue;
+                }
+
+            }
+        }
+    }
+    else {
+        //TODO
     }
 
     return nullptr;
