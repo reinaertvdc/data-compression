@@ -26,10 +26,16 @@ int main(int argc, char *const argv[]) {
             raw[i * init.getConfig().getWidth() / 4 + j].quantize(quant);
             int16_t zzOutput[16];
             raw[i * init.getConfig().getWidth() / 4 + j].zigzag(zzOutput);
-            int len;
-            int16_t *rle = RleCodec::rleEncode(zzOutput, 16, len);
-            memcpy(&rleOutput[iRleTmpOut], rle, len * sizeof(int16_t));
-            iRleTmpOut += len;
+            if (init.getConfig().getApplyRle()) {
+                int len;
+                int16_t *rle = RleCodec::rleEncode(zzOutput, 16, len);
+                memcpy(&rleOutput[iRleTmpOut], rle, len * sizeof(int16_t));
+                iRleTmpOut += len;
+            }
+            else {
+                memcpy(&rleOutput[iRleTmpOut], zzOutput, 16 * sizeof(int16_t));
+                iRleTmpOut += 16;
+            }
         }
     }
 

@@ -3,6 +3,9 @@
 #define PROJECT_QUANTMATRIX_H
 
 
+#include <cstdint>
+
+
 class ValueBlock4x4 {
 private:
     int16_t matrix[4][4];

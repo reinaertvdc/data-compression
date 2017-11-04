@@ -4,6 +4,7 @@
 #include "RawFileParser.h"
 #include <iostream>
 #include <unistd.h>
+#include <cstring>
 
 bool Init::init(int argc, char *const *argv) {
     // Validate argument count
@@ -15,11 +16,11 @@ bool Init::init(int argc, char *const *argv) {
     }
 
     // Read configuration file
-    char *configRealPath = realpath(argv[1], NULL);
-    this->confFileDir = std::string(configRealPath);
-    free(configRealPath);
-    this->confFileName = this->confFileDir.substr(this->confFileDir.find_last_of('/') + 1, this->confFileDir.length());
-    this->confFileDir = this->confFileDir.substr(0, this->confFileDir.find_last_of('/') + 1);
+    this->confFileDir = std::string(argv[1]).substr(0, std::string(argv[1]).find_last_of('/') + 1);
+    char* tmp = realpath(this->confFileDir.c_str(), NULL);
+    this->confFileDir = std::string(tmp);
+    free(tmp);
+    this->confFileName = std::string(argv[1]).substr(std::string(argv[1]).find_last_of('/') + 1, strlen(argv[1]));
     chdir(this->confFileDir.c_str());
     ConfigReader configReader = ConfigReader();
     if (!configReader.read(this->confFileName)) {

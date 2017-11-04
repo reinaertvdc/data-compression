@@ -7,20 +7,15 @@
 #include "StorageFormatCodec.h"
 #include "BitStream.h"
 
-uint8_t *StorageFormatCodec::toStorageFormat(int16_t *data, int size, int &outSize, int width, int height, bool rle, ValueBlock4x4 &quant) {
+uint8_t *StorageFormatCodec::toStorageFormat(int16_t *data, int size, int &outSize, int width, int height, bool rle, const ValueBlock4x4 &quant) {
 
     util::BitStreamWriter outBits(size*2+64);
 
     // width and height
 
-    uint16_t w = static_cast<uint16_t>(width);
-    uint16_t h = static_cast<uint16_t>(height);
-    util::BitStreamReader wBits((uint8_t*)(&w), 2);
-    util::BitStreamReader hBits((uint8_t*)(&h), 2);
-    outBits.put(8, wBits.get(8));
-    outBits.put(8, wBits.get(8));
-    outBits.put(8, hBits.get(8));
-    outBits.put(8, hBits.get(8));
+    uint8_t wh[4] = {static_cast<uint8_t>(width/256), static_cast<uint8_t>(width), static_cast<uint8_t>(height/256), static_cast<uint8_t>(height)};
+    util::BitStreamReader whBits(wh, 4);
+    outBits.put(32, whBits.get(32));
 
     // use of rle bit
 
@@ -100,16 +95,11 @@ int16_t *StorageFormatCodec::fromStorageFormat(uint8_t *data, int size, int &out
 
     // width and height
 
-    uint16_t w;
-    uint16_t h;
-    util::BitStreamWriter wBits((uint8_t *)&w, 2);
-    util::BitStreamWriter hBits((uint8_t *)&h, 2);
-    wBits.put(8, inBits.get(8));
-    wBits.put(8, inBits.get(8));
-    hBits.put(8, inBits.get(8));
-    hBits.put(8, inBits.get(8));
-    wOut = static_cast<int>(w);
-    hOut = static_cast<int>(h);
+    uint8_t wh[4];
+    util::BitStreamWriter whBits(wh, 4);
+    whBits.put(32, inBits.get(32));
+    wOut = static_cast<int>(wh[0])*256+ static_cast<int>(wh[1]);
+    hOut = static_cast<int>(wh[2])*256+ static_cast<int>(wh[3]);
 
     // use of rle bit
 
@@ -117,14 +107,18 @@ int16_t *StorageFormatCodec::fromStorageFormat(uint8_t *data, int size, int &out
 
     // quantization matrix
 
-    uint8_t quantMatrixBits = (uint8_t)((uint8_t )inBits.get(4) + 1);
+    int quantMatrixAmountBits = static_cast<int>((uint8_t)inBits.get(4)) + 1;
+    int quantMatrixAmountBytes = quantMatrixAmountBits / 8 + (quantMatrixAmountBits % 8 == 0 ? 0 : 1);
+    uint8_t quantMatrixData[quantMatrixAmountBytes];
+    util::BitStreamWriter quantMatrixDataBits(quantMatrixData, quantMatrixAmountBytes);
+    for (int i = 0; i < quantMatrixAmountBits; i++) {
+        quantMatrixDataBits.put_bit(inBits.get_bit());
+    }
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
-            quant.getData()[i*4+j] = static_cast<short>((uint16_t)inBits.get(quantMatrixBits));
+            quant.getData()[i*4+j] = static_cast<int16_t >((uint16_t)inBits.get(quantMatrixAmountBits));
         }
     }
-
-
 
     return nullptr;
 }
