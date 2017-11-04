@@ -24,13 +24,13 @@ uint8_t *StorageFormatCodec::toStorageFormat(int16_t *data, int size, int &outSi
 
     // quantization matrix
 
-    uint8_t quantMatrixBits = 1;
-    uint8_t quantMatrixMaxValue = 1;
+    int quantMatrixBits = 1;
+    int quantMatrixMaxValue = 1;
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
             while (quant.getValue(i, j) > quantMatrixMaxValue) {
                 quantMatrixBits++;
-                quantMatrixMaxValue = static_cast<uint8_t>((quantMatrixMaxValue + 1) * 2 - 1);
+                quantMatrixMaxValue = (quantMatrixMaxValue + 1) * 2 - 1;
             }
         }
     }
@@ -101,9 +101,14 @@ int16_t *StorageFormatCodec::fromStorageFormat(uint8_t *data, int size, int &out
     wOut = static_cast<int>(wh[0])*256+ static_cast<int>(wh[1]);
     hOut = static_cast<int>(wh[2])*256+ static_cast<int>(wh[3]);
 
+    std::cout << "w: " << wOut << std::endl;
+    std::cout << "h: " << hOut << std::endl;
+
     // use of rle bit
 
     rleOut = inBits.get_bit() == 1;
+
+    std::cout << "rle: " << rleOut << std::endl;
 
     // quantization matrix
 
@@ -111,13 +116,19 @@ int16_t *StorageFormatCodec::fromStorageFormat(uint8_t *data, int size, int &out
     int quantMatrixAmountBytes = quantMatrixAmountBits / 8 + (quantMatrixAmountBits % 8 == 0 ? 0 : 1);
     uint8_t quantMatrixData[quantMatrixAmountBytes];
     util::BitStreamWriter quantMatrixDataBits(quantMatrixData, quantMatrixAmountBytes);
-    for (int i = 0; i < quantMatrixAmountBits; i++) {
-        quantMatrixDataBits.put_bit(inBits.get_bit());
-    }
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
             quant.getData()[i*4+j] = static_cast<int16_t >((uint16_t)inBits.get(quantMatrixAmountBits));
         }
+    }
+    quant.setFilled();
+
+    std::cout << "quantization matrix:" << std::endl;
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            std::cout << quant.getValue(i, j) << "\t";
+        }
+        std::cout << std::endl;
     }
 
     return nullptr;
