@@ -40,83 +40,21 @@ const Config &Init::getConfig() const {
     return this->conf;
 }
 
-Init::Init(int argc, char *const *argv, bool readQuantFile, bool readRawFile, bool readEncodedFile) {
-    int step = 0;
-    int totalStep = 4;
-    this->initialized = true;
-    //CONFIG
-    if (this->init(argc, argv)) {
-        this->outputProgress(++step, totalStep, "OK", "Configuration read, all key values found");
-    } else {
-        this->initialized = false;
-        this->outputProgress(++step, totalStep, "FAIL", "Could not read configuration file");
-        return;
-    }
-    //QUANTIZATION matrix
-    if (readQuantFile) {
-        if (this->initQuantMatrix()) {
-            this->outputProgress(++step, totalStep, "OK", "Quantization matrix file read");
-        } else {
-            this->initialized = false;
-            this->outputProgress(++step, totalStep, "FAIL", "Quantization matrix file could not be read");
-        }
-    } else {
-        this->outputProgress(++step, totalStep, "SKIP", "(Quantization matrix file)");
-    }
-    //RAW FILE
-    if (readRawFile) {
-        if (this->initRawFile()) {
-            this->outputProgress(++step, totalStep, "OK", "Raw image file read");
-        } else {
-            this->initialized = false;
-            this->outputProgress(++step, totalStep, "FAIL", "Raw image file could not be read");
-        }
-    } else {
-        this->outputProgress(++step, totalStep, "SKIP", "(Raw image file)");
-    }
-    //ENCODED FILE
-    if (readEncodedFile) {
-        if (this->initEncodedFile()) {
-            this->outputProgress(++step, totalStep, "OK", "Encoded image file read");
-        } else {
-            this->initialized = false;
-            this->outputProgress(++step, totalStep, "FAIL", "Encoded image file could not be read");
-        }
-    } else {
-        this->outputProgress(++step, totalStep, "SKIP", "(Encoded image file)");
-    }
-    //INITIALIZATION DONE/FAILED
-    if (this->initialized) {
-        std::cout << "Initialization done" << std::endl << std::endl;
-    } else {
-        std::cout << "Initialization failed" << std::endl << std::endl;
-    }
+Init::Init(int argc, char *const *argv) {
+    this->initialized = this->init(argc, argv);
 }
 
-bool Init::initQuantMatrix() {
-    if (this->conf.getQuantMatrixFilePath().empty()) return false;
-    this->quantMatrix = QuantFileParser::parseFile(this->conf.getQuantMatrixFilePath());
-    return !this->quantMatrix.isEmpty();
+ValueBlock4x4 Init::getQuantMatrix() const {
+    return QuantFileParser::parseFile(this->conf.getQuantMatrixFilePath());
 }
 
-bool Init::initRawFile() {
-    if (this->conf.getRawFilePath().empty()) return false;
-    this->rawImage = RawFileParser::parseFile8bit(this->conf.getRawFilePath(), this->conf.getWidth(),
-                                                  this->conf.getHeight());
-    return this->rawImage != nullptr;
+ValueBlock4x4 *Init::getRawImage() const {
+    return RawFileParser::readRawImageFile(this->conf.getRawFilePath(), this->conf.getWidth(), this->conf.getHeight());
 }
 
-bool Init::initEncodedFile() {
-    if (this->conf.getEncodedFilePath().empty()) return false;
-    this->tmpEncodedImage = RawFileParser::parseFile16bit(this->conf.getEncodedFilePath(),
-                                                          this->tmpEncodedImageFileSize);
-    return this->tmpEncodedImage != nullptr;
-}
-
-void Init::outputProgress(int step, int totalSteps, std::string status, std::string message) {
-    std::cout << "[" << step << "/" << totalSteps << " " << status << "] " << message << std::endl;
-}
-
-ValueBlock4x4 &Init::getRawImageBlock(int row, int col) {
-    return this->rawImage[this->conf.getWidth() / 4 * row + col];
+uint8_t *Init::getEncodedData(int & size) const {
+    int tmpSize;
+    uint8_t *data = RawFileParser::readEncodedFile(this->conf.getEncodedFilePath(), tmpSize);
+    size = tmpSize;
+    return data;
 }

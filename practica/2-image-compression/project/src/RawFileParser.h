@@ -11,13 +11,17 @@
 
 class RawFileParser {
 public:
-    static ValueBlock4x4* parseFile8bit(std::string filename, int width, int height);
-    static bool writeFile8bit(std::string filename, ValueBlock4x4 *matrix, int width, int height);
-    static bool writeFile8bit(std::string filename, uint8_t *data, int size);
-    static ValueBlock4x4* parseFile16bit(std::string filename, int width, int height);
-    static short* parseFile16bit(std::string filename, int &size);
-    static bool writeFile16bit(std::string filename, ValueBlock4x4 *matrix, int width, int height);
-    static bool WriteFile16bit(std::string filename, short *array, int size);
+    static ValueBlock4x4* readRawImageFile(std::string filename, int width, int height);
+    static uint8_t* readEncodedFile(std::string filename, int &size);
+    static bool writeEncodedFile(std::string filename, int size, uint8_t* data);
+    static bool writeRawImageFile(std::string filename, int width, int height, ValueBlock4x4* data);
+//    static ValueBlock4x4* parseFile8bit(std::string filename, int width, int height);
+//    static bool writeFile8bit(std::string filename, ValueBlock4x4 *matrix, int width, int height);
+//    static bool writeFile8bit(std::string filename, uint8_t *data, int size);
+//    static ValueBlock4x4* parseFile16bit(std::string filename, int width, int height);
+//    static short* parseFile16bit(std::string filename, int &size);
+//    static bool writeFile16bit(std::string filename, ValueBlock4x4 *matrix, int width, int height);
+//    static bool WriteFile16bit(std::string filename, short *array, int size);
 };
 
 

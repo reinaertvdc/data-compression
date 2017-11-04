@@ -30,7 +30,7 @@ ValueBlock4x4 QuantFileParser::parseFile(std::string filename) {
     std::fstream file;
     file.open(filename, std::ios::in);
     std::string line;
-    short mat[4][4];
+    int16_t mat[4][4];
     if (!file.is_open()) {
         return ValueBlock4x4();
     }
@@ -45,7 +45,7 @@ ValueBlock4x4 QuantFileParser::parseFile(std::string filename) {
         int iCol = 0;
         for (const std::string &spart : lineparts) {
             if (iCol >= 4) continue;
-            mat[iRow][iCol] = static_cast<short>(std::stoi(spart));
+            mat[iRow][iCol] = static_cast<int16_t>(std::stoi(spart));
             iCol++;
         }
         iRow++;
