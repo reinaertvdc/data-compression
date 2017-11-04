@@ -1,6 +1,3 @@
-//
-// Created by cwout on 13/10/17.
-//
 
 #include "QuantFileParser.h"
 #include <fstream>
@@ -14,7 +11,7 @@ std::vector<std::string> QuantFileParser::splitBySpaces(std::string line) {
     for (int i = 0; i < line.length(); i++) {
         if (line[i] != ' ') {
             cur += line[i];
-            if (i == line.length()-1) {
+            if (i == line.length() - 1) {
                 ret.push_back(cur);
                 cur = "";
             }

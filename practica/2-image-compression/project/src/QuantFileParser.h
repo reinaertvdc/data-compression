@@ -1,6 +1,3 @@
-//
-// Created by cwout on 13/10/17.
-//
 
 #ifndef PROJECT_QUANTFILEPARSER_H
 #define PROJECT_QUANTFILEPARSER_H
@@ -13,6 +10,7 @@
 class QuantFileParser {
 public:
     static ValueBlock4x4 parseFile(std::string filename);
+
 private:
     static std::vector<std::string> splitBySpaces(std::string line);
 };

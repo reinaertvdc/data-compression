@@ -7,32 +7,32 @@
 #include <iostream>
 #include "RleCodec.h"
 
-short *RleCodec::rleEncode(short *in, int size, int &outSize) {
+int16_t *RleCodec::rleEncode(int16_t *in, int size, int &outSize) {
     int nonZeroSize = size;
     while (nonZeroSize > 0 && in[nonZeroSize] != 0) {
         nonZeroSize--;
     }
-    std::vector<short> tmpOut;
+    std::vector<int16_t> tmpOut;
     tmpOut.emplace_back(nonZeroSize);
     for (int i = 0; i < nonZeroSize; i++) {
         tmpOut.emplace_back(in[i]);
     }
     outSize = static_cast<int>(tmpOut.size());
-    auto * out = new short[outSize];
-    memcpy(out, &tmpOut[0], sizeof(short)*outSize);
+    int16_t *out = new int16_t[outSize];
+    memcpy(out, &tmpOut[0], sizeof(int16_t) * outSize);
     return out;
 }
 
-short *RleCodec::rleDecode(short *in, int outSize, int &inSizeUsed) {
+short *RleCodec::rleDecode(int16_t *in, int outSize, int &inSizeUsed) {
     inSizeUsed = 0;
     int size = in[0];
     inSizeUsed += 1 + size;
-    short* out = new short[outSize];
+    int16_t *out = new int16_t[outSize];
     for (int i = 0; i < size; i++) {
-        out[i] = in[i+1];
+        out[i] = in[i + 1];
     }
     for (int i = size; i < outSize; i++) {
-        out[i] = in[i];
+        out[i] = 0;
     }
     return out;
 }

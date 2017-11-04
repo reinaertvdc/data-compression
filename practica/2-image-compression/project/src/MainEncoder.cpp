@@ -8,24 +8,27 @@
 
 int main(int argc, char *const argv[]) {
     std::cout << "ENCODER" << std::endl << std::endl;
-    Init init(argc, argv, true, true, false);
+    Init init(argc, argv);
     if (!init.isInitialized()) {
         return 1;
     }
 
-    short rleOutput[init.getConfig().getWidth() * init.getConfig().getHeight() * (4 * 4 + 1) / (4 * 4)];
+    ValueBlock4x4 *raw = init.getRawImage();
+    ValueBlock4x4 quant = init.getQuantMatrix();
+
+    int16_t rleOutput[init.getConfig().getWidth() * init.getConfig().getHeight() * (4 * 4 + 1) / (4 * 4)];
     int iRleTmpOut = 0;
-    short zzOutput[16];
 
     // DCT transform and quantization and zigzag convert and rle encode
     for (int i = 0; i < init.getConfig().getHeight() / 4; i++) {
         for (int j = 0; j < init.getConfig().getWidth() / 4; j++) {
-            init.getRawImageBlock(i, j).applyDct();
-            init.getRawImageBlock(i, j).quantize(init.getQuantMatrix());
-            init.getRawImageBlock(i, j).zigzag(zzOutput);
+            raw[i * init.getConfig().getWidth() / 4 + j].applyDct();
+            raw[i * init.getConfig().getWidth() / 4 + j].quantize(quant);
+            int16_t zzOutput[16];
+            raw[i * init.getConfig().getWidth() / 4 + j].zigzag(zzOutput);
             int len;
-            short *rle = RleCodec::rleEncode(zzOutput, 16, len);
-            memcpy(&rleOutput[iRleTmpOut], rle, len * sizeof(short));
+            int16_t *rle = RleCodec::rleEncode(zzOutput, 16, len);
+            memcpy(&rleOutput[iRleTmpOut], rle, len * sizeof(int16_t));
             iRleTmpOut += len;
         }
     }
@@ -33,8 +36,8 @@ int main(int argc, char *const argv[]) {
     int size;
     uint8_t *data = StorageFormatCodec::toStorageFormat(rleOutput, iRleTmpOut, size, init.getConfig().getWidth(),
                                                         init.getConfig().getHeight(), init.getConfig().getApplyRle(),
-                                                        const_cast<ValueBlock4x4 &>(init.getQuantMatrix()));
+                                                        quant);
 
-    RawFileParser::writeFile8bit(init.getConfig().getEncodedFilePath(), data, size);
+    RawFileParser::writeEncodedFile(init.getConfig().getEncodedFilePath(), size, data);
 
 }

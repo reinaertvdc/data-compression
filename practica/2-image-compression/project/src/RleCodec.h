@@ -1,6 +1,3 @@
-//
-// Created by cwout on 19/10/17.
-//
 
 #ifndef PROJECT_RLEENCODER_H
 #define PROJECT_RLEENCODER_H
@@ -8,8 +5,9 @@
 
 class RleCodec {
 public:
-    static short *rleEncode(short* in, int size, int &outSize);
-    static short *rleDecode(short* in, int outSize, int &inSizeUsed);
+    static int16_t *rleEncode(int16_t *in, int size, int &outSize);
+
+    static int16_t *rleDecode(int16_t *in, int outSize, int &inSizeUsed);
 };
 
 

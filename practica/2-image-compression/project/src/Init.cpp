@@ -52,7 +52,7 @@ ValueBlock4x4 *Init::getRawImage() const {
     return RawFileParser::readRawImageFile(this->conf.getRawFilePath(), this->conf.getWidth(), this->conf.getHeight());
 }
 
-uint8_t *Init::getEncodedData(int & size) const {
+uint8_t *Init::getEncodedData(int &size) const {
     int tmpSize;
     uint8_t *data = RawFileParser::readEncodedFile(this->conf.getEncodedFilePath(), tmpSize);
     size = tmpSize;

@@ -8,8 +8,8 @@ const double ValueBlock4x4::dctTransformMatrix[4][4] = {{0.5,   0.5,    0.5,    
                                                         {0.653, 0.271,  -0.271, -0.653},
                                                         {0.5,   -0.5,   -0.5,   0.5},
                                                         {0.271, -0.653, 0.653,  -0.271}};
-const int ValueBlock4x4::zzPatternRow[16] = {0,0,1,2,1,0,0,1,2,3,3,2,1,2,3,3};
-const int ValueBlock4x4::zzPatternCol[16] = {0,1,0,0,1,2,3,2,1,0,1,2,3,3,2,3};
+const int ValueBlock4x4::zzPatternRow[16] = {0, 0, 1, 2, 1, 0, 0, 1, 2, 3, 3, 2, 1, 2, 3, 3};
+const int ValueBlock4x4::zzPatternCol[16] = {0, 1, 0, 0, 1, 2, 3, 2, 1, 0, 1, 2, 3, 3, 2, 3};
 
 ValueBlock4x4::ValueBlock4x4(int16_t matrix[4][4]) : empty(false) {
     std::memcpy(this->matrix, matrix, sizeof(int16_t) * 16);
@@ -79,12 +79,13 @@ void ValueBlock4x4::quantize(const ValueBlock4x4 &quant) {
 void ValueBlock4x4::deQuantize(const ValueBlock4x4 &quant) {
     for (int r = 0; r < 4; r++) {
         for (int c = 0; c < 4; c++) {
-            this->matrix[r][c] = static_cast<int16_t>(static_cast<int>(this->matrix[r][c]) * static_cast<int>(quant.matrix[r][c]));
+            this->matrix[r][c] = static_cast<int16_t>(static_cast<int>(this->matrix[r][c]) *
+                                                      static_cast<int>(quant.matrix[r][c]));
         }
     }
 }
 
-bool ValueBlock4x4::zigzag(int16_t* out) const {
+bool ValueBlock4x4::zigzag(int16_t *out) const {
     if (out == nullptr) return false;
     if (this->empty) return false;
     for (int i = 0; i < 16; i++) {
