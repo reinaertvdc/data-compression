@@ -16,11 +16,21 @@ bool Init::init(int argc, char *const *argv) {
     }
 
     // Read configuration file
-    this->confFileDir = std::string(argv[1]).substr(0, std::string(argv[1]).find_last_of('/') + 1);
+    if (std::string(argv[1]).find('/') == std::string::npos) {
+        this->confFileDir = std::string(".");
+    }
+    else {
+        this->confFileDir = std::string(argv[1]).substr(0, std::string(argv[1]).find_last_of('/') + 1);
+    }
     char* tmp = realpath(this->confFileDir.c_str(), NULL);
     this->confFileDir = std::string(tmp);
     free(tmp);
-    this->confFileName = std::string(argv[1]).substr(std::string(argv[1]).find_last_of('/') + 1, strlen(argv[1]));
+    if (std::string(argv[1]).find('/') == std::string::npos) {
+        this->confFileName = std::string(argv[1]);
+    }
+    else {
+        this->confFileName = std::string(argv[1]).substr(std::string(argv[1]).find_last_of('/') + 1, strlen(argv[1]));
+    }
     chdir(this->confFileDir.c_str());
     ConfigReader configReader = ConfigReader();
     if (!configReader.read(this->confFileName)) {

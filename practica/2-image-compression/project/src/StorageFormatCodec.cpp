@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <cstring>
+#include <vector>
 #include "StorageFormatCodec.h"
 #include "BitStream.h"
 
@@ -144,8 +145,8 @@ int16_t *StorageFormatCodec::fromStorageFormat(uint8_t *data, int size, int &out
     uint8_t wh[4];
     util::BitStreamWriter whBits(wh, 4);
     whBits.put(32, inBits.get(32));
-    wOut = static_cast<int>(wh[0])*256+ static_cast<int>(wh[1]);
-    hOut = static_cast<int>(wh[2])*256+ static_cast<int>(wh[3]);
+    wOut = static_cast<int>(wh[0])*256*4+ static_cast<int>(wh[1])*4;
+    hOut = static_cast<int>(wh[2])*256*4+ static_cast<int>(wh[3])*4;
 
     std::cout << "w: " << wOut << std::endl;
     std::cout << "h: " << hOut << std::endl;
@@ -178,27 +179,39 @@ int16_t *StorageFormatCodec::fromStorageFormat(uint8_t *data, int size, int &out
 
     // data
 
-    int16_t tmpData[hOut*wOut*18/16];
-    int iTmpData = 0;
+    std::vector<int16_t> tmpData;
     if (rleOut) {
         for (int iBlock = 0; iBlock < hOut / 4; iBlock++) {
             for (int jBlock = 0; jBlock < wOut / 4; jBlock++) {
+                int dcValBitSize = static_cast<int>(inBits.get(4));
+                int dcVal = 0;
+                if (dcValBitSize > 0) {
+                    bool dcValNeg = static_cast<int>(inBits.get_bit()) == 1;
+                    int dcValAbs = static_cast<int>(inBits.get(dcValBitSize));
+                    if (dcValNeg) dcVal = -dcValAbs;
+                    else dcVal = dcValAbs;
+                }
                 int acValCount = static_cast<int>(inBits.get(4));
                 int valCount = acValCount + 1;
-                tmpData[iTmpData++] = static_cast<int16_t>(valCount);
-                int valBitSize = static_cast<int>(inBits.get(4));
-                if (acValCount == 0 && valBitSize == 0) {
+                if (dcValBitSize == 0 && acValCount == 0) {
+                    tmpData.emplace_back(static_cast<int16_t>(0));
                     continue;
                 }
-                int acValBitSize = static_cast<int>(inBits.get(4)) + 1;
-                bool offsetNegative = static_cast<int>(inBits.get_bit()) == 1;
-                int offsetBitSize = static_cast<int>(inBits.get(4)) + 1;
-                int offset = static_cast<int>(inBits.get(offsetBitSize));
-                if (offsetNegative) offset *= -1;
-                int dcValBitSize = static_cast<int>(inBits.get(4)) + 1;
-                tmpData[iTmpData++] = static_cast<int16_t>(inBits.get(dcValBitSize));
-                for (int i = 0; i < acValCount; i++) {
-                    tmpData[iTmpData++] = static_cast<int16_t>(static_cast<int>(inBits.get(acValBitSize))+offset);
+                tmpData.emplace_back(valCount);
+                tmpData.emplace_back(dcVal);
+                if (acValCount > 0) {
+                    int offsetBitSize = static_cast<int>(inBits.get(4));
+                    int offset = 0;
+                    if (offsetBitSize > 0) {
+                        bool offsetNeg = static_cast<int>(inBits.get_bit()) == 1;
+                        int offsetAbs = static_cast<int>(inBits.get(offsetBitSize));
+                        if (offsetNeg) offset = -offsetAbs;
+                        else offset = offsetAbs;
+                    }
+                    int acValBitSize = static_cast<int>(inBits.get(4)) + 1;
+                    for (int i = 0; i < acValCount; i++) {
+                        tmpData.emplace_back(static_cast<int16_t>(static_cast<int>(inBits.get(acValBitSize))+offset));
+                    }
                 }
             }
         }
@@ -207,5 +220,8 @@ int16_t *StorageFormatCodec::fromStorageFormat(uint8_t *data, int size, int &out
         //TODO
     }
 
-    return nullptr;
+    outSize = static_cast<int>(tmpData.size());
+    int16_t * out = new int16_t[outSize];
+    memcpy(out, &tmpData[0], sizeof(int16_t)*outSize);
+    return out;
 }

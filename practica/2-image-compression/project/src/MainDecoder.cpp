@@ -47,4 +47,6 @@ int main(int argc, char *const argv[]) {
 
     RawFileParser::writeRawImageFile(init.getConfig().getDecodedFilePath(), w, h, &blockList[0][0]);
 
+    delete[] encoded;
+
 }
