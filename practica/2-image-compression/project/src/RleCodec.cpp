@@ -13,7 +13,7 @@ int16_t *RleCodec::rleEncode(int16_t *in, int size, int &outSize) {
         nonZeroSize--;
     }
     std::vector<int16_t> tmpOut;
-    tmpOut.emplace_back(nonZeroSize);
+    tmpOut.emplace_back(static_cast<int16_t>(nonZeroSize));
     for (int i = 0; i < nonZeroSize; i++) {
         tmpOut.emplace_back(in[i]);
     }

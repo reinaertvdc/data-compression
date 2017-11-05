@@ -1,0 +1,46 @@
+HEADER
+
+
+
+16		w = width (in blocks)
+
+16		h = height (in blocks)
+
+1		rle
+
+4		m + 1 = amount of bits used per quantization matrix value
+
+* 16
+
+		m 		quantization matrix value
+
+
+* w*h
+
+		(if rle)
+
+				4		y = amount of bits used for the absolute value of the dc value
+
+				(if y != 0)
+
+						1		dc values negative (1 means -dcval)
+
+						y		d = absolute value of the dc value
+
+				4		c = amount of non-zero ac values in block
+
+				(if c != 0)
+
+						4		z = amount of bits used for the absolute value of the offset value
+
+						(if z != 0)
+						
+								1		offset negative (1 means -offset)
+
+								z 		o = absolute value of the offset of the ac values
+
+						4		a + 1 = amount of bits used per ac value
+
+						* c
+
+								a 		ac value minus the offset
