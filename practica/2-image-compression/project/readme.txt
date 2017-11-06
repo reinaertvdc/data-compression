@@ -15,7 +15,7 @@ inhoudt:
 4. **Zig-zag** scannen van de gekwantiseerde coëfficiënten
 5. **RLE** toepassen wanneer gevraagd
 6. **Opslaan** in een compact formaat dat alle nodige informatie bevat om de
-  afbeelding weer op te bouwen (zie `storage_model.txt` voor meer details)
+   afbeelding weer op te bouwen (zie `storage_model.txt` voor meer details)
 
 Verder wordt een **gedetailleerde log** uitgeschreven naar het gegeven pad,
 zoals gevraagd, en wordt ook een beperkte log uitgeschreven naar de console.

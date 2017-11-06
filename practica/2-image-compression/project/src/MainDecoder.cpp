@@ -1,6 +1,9 @@
 
 #include <iostream>
 #include <cstring>
+#include <sstream>
+#include <iomanip>
+#include <tgmath.h>
 #include "Init.h"
 #include "RawFileParser.h"
 #include "RleCodec.h"
@@ -18,21 +21,16 @@ int main(int argc, char *const argv[]) {
 
     Logger::info("Decoder started");
 
-    Config config = init.getConfig();
+    const Config &config = init.getConfig();
 
     if (config.getLogFilePath().length() == 0) {
         Logger::fileLevel = Logger::Level::OFF;
     }
 
     Logger::config("Configuration:");
-    Logger::config("    rawfile = " + config.getRawFilePath());
-    Logger::config("    encfile = " + config.getEncodedFilePath());
-    Logger::config("    decfile = " + config.getDecodedFilePath());
-    Logger::config("      width = " + config.getWidth());
-    Logger::config("     height = " + config.getHeight());
-    Logger::config("        rle = " + config.getApplyRle());
-    Logger::config("  quantfile = " + config.getQuantMatrixFilePath());
-    Logger::config("    logfile = " + config.getLogFilePath());
+    Logger::config("  encfile = " + config.getEncodedFilePath());
+    Logger::config("  decfile = " + config.getDecodedFilePath());
+    Logger::config("  logfile = " + config.getLogFilePath());
 
     int compressedSize;
     uint8_t *compressed = init.getEncodedData(compressedSize);
@@ -41,8 +39,31 @@ int main(int argc, char *const argv[]) {
     int h;
     bool rle;
     ValueBlock4x4 quant;
+
+    Logger::info("Analyzing image data");
+
     int16_t *encoded = StorageFormatCodec::fromStorageFormat(compressed, compressedSize, encodedSize, w, h, rle, quant);
     ValueBlock4x4 blockList[h / 4][w / 4];
+
+    std::stringstream stream;
+    stream << std::fixed << std::setprecision(2) << (double) compressedSize / (config.getWidth() * config.getHeight()) * 100;
+    std::string compressionRatio = stream.str();
+
+    Logger::info(compressionRatio + "% of original size, from " +
+                 std::to_string((int) round((double) (config.getWidth() * config.getHeight()) / 1000)) + "KB to " +
+                 std::to_string((int) round((double) (compressedSize / 1000))) + "KB");
+
+    Logger::info("Image appears to be " + std::to_string(w) + "x" + std::to_string(h) + ", " + (rle ? "and" : "not") +
+                 " run-length encoded");
+
+    Logger::info("Quantization matrix:");
+
+    for (int i = 0; i < 4; i++) {
+        Logger::info("  " + std::to_string(quant.getValue(i, 0)) + "\t" + std::to_string(quant.getValue(i, 1)) + "\t" +
+                     std::to_string(quant.getValue(i, 2)) + "\t" + std::to_string(quant.getValue(i, 3)));
+    }
+
+    Logger::info("Decompressing image");
 
     int indexEncodedImage = 0;
     for (int i = 0; i < h / 4; i++) {
@@ -65,6 +86,8 @@ int main(int argc, char *const argv[]) {
             blockList[i][j] = block;
         }
     }
+
+    Logger::info("Image decompressed");
 
     RawFileParser::writeRawImageFile(config.getDecodedFilePath(), w, h, &blockList[0][0]);
 

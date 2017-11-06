@@ -207,14 +207,9 @@ StorageFormatCodec::fromStorageFormat(uint8_t *data, int size, int &outSize, int
     wOut = static_cast<int>(wh[0]) * 256 * 4 + static_cast<int>(wh[1]) * 4;
     hOut = static_cast<int>(wh[2]) * 256 * 4 + static_cast<int>(wh[3]) * 4;
 
-    std::cout << "w: " << wOut << std::endl;
-    std::cout << "h: " << hOut << std::endl;
-
     // use of rle bit
 
     rleOut = inBits.get_bit() == 1;
-
-    std::cout << "rle: " << rleOut << std::endl;
 
     // quantization matrix
 
@@ -228,13 +223,6 @@ StorageFormatCodec::fromStorageFormat(uint8_t *data, int size, int &outSize, int
         }
     }
     quant.setFilled();
-    std::cout << "quantization matrix:" << std::endl;
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            std::cout << quant.getValue(i, j) << "\t";
-        }
-        std::cout << std::endl;
-    }
 
     // data
 
