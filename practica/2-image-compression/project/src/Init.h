@@ -6,6 +6,10 @@
 #include "Config.h"
 #include "ValueBlock4x4.h"
 
+/**
+ * Class handling the initialization of all input values
+ * Reads the config file
+ */
 class Init {
 private:
     /**
