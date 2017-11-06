@@ -25,14 +25,8 @@ bool ReadInputLine(FILE *fi, std::string &line) {
     return true;
 }
 
-ConfigReader::ConfigReader() {
-}
-
-ConfigReader::~ConfigReader() {
-}
-
 bool ConfigReader::read(const std::string &fileName) {
-    clear();
+    this->clear();
 
     FILE *pFile = fopen(fileName.c_str(), "rt");
     if (pFile == NULL) {
