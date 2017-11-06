@@ -54,14 +54,57 @@ int main(int argc, char *const argv[]) {
 
     // DCT transform and quantization and zigzag convert and rle encode
     for (int i = 0; i < init.getConfig().getHeight() / 4; i++) {
+        Logger::fine("Row " + std::to_string(i + 1) + "/" + std::to_string(init.getConfig().getHeight() / 4));
+
         for (int j = 0; j < init.getConfig().getWidth() / 4; j++) {
+            Logger::finer("    Column " + std::to_string(j + 1) + "/" + std::to_string(init.getConfig().getWidth() / 4));
+
+            ValueBlock4x4 &b = raw[i * init.getConfig().getWidth() / 4 + j];
+
+            std::string s = "         original: ";
+            for (int row = 0; row < 4; row++) {
+                for (int col = 0; col < 4; col++) {
+                    s += "\t" + std::to_string(b.getValue(row, col));
+                }
+            }
+            Logger::finest(s);
+
             raw[i * init.getConfig().getWidth() / 4 + j].applyDct();
+            s = "              dct: ";
+            for (int row = 0; row < 4; row++) {
+                for (int col = 0; col < 4; col++) {
+                    s += "\t" + std::to_string(b.getValue(row, col));
+                }
+            }
+            Logger::finest(s);
+
             raw[i * init.getConfig().getWidth() / 4 + j].quantize(quant);
+            s = "        quantized: ";
+            for (int row = 0; row < 4; row++) {
+                for (int col = 0; col < 4; col++) {
+                    s += "\t" + std::to_string(b.getValue(row, col));
+                }
+            }
+            Logger::finest(s);
+
             int16_t zzOutput[16];
             raw[i * init.getConfig().getWidth() / 4 + j].zigzag(zzOutput);
+            s = "           zigzag: ";
+            for (int k = 0; k < 16; k++) {
+                s += "\t" + std::to_string(zzOutput[k]);
+            }
+            Logger::finest(s);
+
             if (init.getConfig().getApplyRle()) {
                 int len;
                 int16_t *rle = RleCodec::rleEncode(zzOutput, 16, len);
+
+                s = "              rle: ";
+                for (int k = 0; k < len; k++) {
+                    s += "\t" + std::to_string(rle[k]);
+                }
+                Logger::finest(s);
+
                 memcpy(&rleOutput[iRleTmpOut], rle, len * sizeof(int16_t));
                 iRleTmpOut += len;
             } else {
