@@ -106,6 +106,7 @@ int main(int argc, char *const argv[]) {
                 Logger::finest(s);
 
                 memcpy(&rleOutput[iRleTmpOut], rle, len * sizeof(int16_t));
+                delete[] rle;
                 iRleTmpOut += len;
             } else {
                 memcpy(&rleOutput[iRleTmpOut], zzOutput, 16 * sizeof(int16_t));
@@ -131,9 +132,10 @@ int main(int argc, char *const argv[]) {
 
     RawFileParser::writeEncodedFile(config.getEncodedFilePath(), size, data);
 
-    delete[] data;
-
     Logger::info("Encoder finished");
 
     Logger::file.close();
+
+    delete[] raw;
+    delete[] data;
 }
