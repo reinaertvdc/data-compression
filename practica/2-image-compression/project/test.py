@@ -97,7 +97,7 @@ def main() -> None:
 
     for filename in os.listdir(TEST_DIR):
         for extension in IN_EXTENSIONS:
-            if filename.endswith('.%s' % (extension)) and not filename.endswith('.%s.%s' % (IN_EXTENSION, extension)) and not filename.endswith('.%s.%s' % (OUT_EXTENSION, extension)):
+            if filename.endswith('.%s' % (extension)) and not filename.endswith('.%s.%s' % (IN_EXTENSION, extension)) and not filename.endswith('.%s.%s' % (OUT_EXTENSION, extension))and not filename.endswith('.%s.%s' % (DIFF_EXTENSION, extension)):
                 file_path = TEST_DIR + '/' + filename
                 base_path = file_path.rsplit('.', 1)[0]
                 dimensions = get_image_dimensions(file_path)
