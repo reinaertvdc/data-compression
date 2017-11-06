@@ -91,9 +91,10 @@ int main(int argc, char *const argv[]) {
 
     RawFileParser::writeRawImageFile(config.getDecodedFilePath(), w, h, &blockList[0][0]);
 
-    delete[] encoded;
-
     Logger::info("Decoder finished");
 
     Logger::file.close();
+
+    delete[] compressed;
+    delete[] encoded;
 }
