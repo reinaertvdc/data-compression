@@ -1,6 +1,6 @@
 #include "Logger.h"
 
-Logger::Level Logger::consoleLevel = Level::INFO;
+Logger::Level Logger::consoleLevel = Level::CONFIG;
 Logger::Level Logger::fileLevel = Level::ALL;
 
 std::ofstream Logger::file = std::ofstream();
@@ -54,7 +54,7 @@ void Logger::log(Logger::Level level, const char *message) {
     else if (level == Level::WARNING) { prefix = PREFIX_WARNING; }
     else if (level == Level::SEVERE) { prefix = PREFIX_SEVERE; }
 
-    std::string out = std::string(prefix) + ": " + message + ".";
+    std::string out = std::string(prefix) + ":  " + message;
 
     if (level >= Logger::fileLevel) {
         file << out << std::endl;
@@ -63,4 +63,32 @@ void Logger::log(Logger::Level level, const char *message) {
     if (level >= Logger::consoleLevel) {
         ((level >= Level::WARNING) ? std::cerr : std::cout) << out << std::endl;
     }
+}
+
+void Logger::finest(const std::string &message) {
+    finest(message.c_str());
+}
+
+void Logger::finer(const std::string &message) {
+    finer(message.c_str());
+}
+
+void Logger::fine(const std::string &message) {
+    fine(message.c_str());
+}
+
+void Logger::config(const std::string &message) {
+    config(message.c_str());
+}
+
+void Logger::info(const std::string &message) {
+    info(message.c_str());
+}
+
+void Logger::warning(const std::string &message) {
+    warning(message.c_str());
+}
+
+void Logger::severe(const std::string &message) {
+    severe(message.c_str());
 }

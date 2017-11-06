@@ -18,6 +18,22 @@ int main(int argc, char *const argv[]) {
 
     Logger::info("Encoder started");
 
+    Config config = init.getConfig();
+
+    if (config.getLogFilePath().length() == 0) {
+        Logger::fileLevel = Logger::Level::OFF;
+    }
+
+    Logger::config("Configuration:");
+    Logger::config("    rawfile = " + config.getRawFilePath());
+    Logger::config("    encfile = " + config.getEncodedFilePath());
+    Logger::config("    decfile = " + config.getDecodedFilePath());
+    Logger::config("      width = " + config.getWidth());
+    Logger::config("     height = " + config.getHeight());
+    Logger::config("        rle = " + config.getApplyRle());
+    Logger::config("  quantfile = " + config.getQuantMatrixFilePath());
+    Logger::config("    logfile = " + config.getLogFilePath());
+
     ValueBlock4x4 *raw = init.getRawImage();
     ValueBlock4x4 quant = init.getQuantMatrix();
 
@@ -48,7 +64,7 @@ int main(int argc, char *const argv[]) {
                                                         init.getConfig().getHeight(), init.getConfig().getApplyRle(),
                                                         quant);
 
-    RawFileParser::writeEncodedFile(init.getConfig().getEncodedFilePath(), size, data);
+    RawFileParser::writeEncodedFile(config.getEncodedFilePath(), size, data);
 
     delete[] data;
 

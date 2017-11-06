@@ -18,7 +18,6 @@ public:
 
 	bool read(const std::string &fileName);
 	bool getKeyValue(const std::string &key, std::string &value);
-	void printAll() const;
 	void clear();
 
 	std::string getErrorDescription() const;

@@ -18,12 +18,33 @@ public:
     static std::ofstream file;
 
     static void finest(const char *message);
+
+    static void finest(const std::string &message);
+
     static void finer(const char *message);
+
+    static void finer(const std::string &message);
+
     static void fine(const char *message);
+
+    static void fine(const std::string &message);
+
     static void config(const char *message);
+
+    static void config(const std::string &message);
+
     static void info(const char *message);
+
+    static void info(const std::string &message);
+
     static void warning(const char *message);
+
+    static void warning(const std::string &message);
+
     static void severe(const char *message);
+
+    static void severe(const std::string &message);
+
 private:
     static const char *PREFIX_FINEST;
     static const char *PREFIX_FINER;

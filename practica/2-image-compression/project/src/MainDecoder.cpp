@@ -18,6 +18,22 @@ int main(int argc, char *const argv[]) {
 
     Logger::info("Decoder started");
 
+    Config config = init.getConfig();
+
+    if (config.getLogFilePath().length() == 0) {
+        Logger::fileLevel = Logger::Level::OFF;
+    }
+
+    Logger::config("Configuration:");
+    Logger::config("    rawfile = " + config.getRawFilePath());
+    Logger::config("    encfile = " + config.getEncodedFilePath());
+    Logger::config("    decfile = " + config.getDecodedFilePath());
+    Logger::config("      width = " + config.getWidth());
+    Logger::config("     height = " + config.getHeight());
+    Logger::config("        rle = " + config.getApplyRle());
+    Logger::config("  quantfile = " + config.getQuantMatrixFilePath());
+    Logger::config("    logfile = " + config.getLogFilePath());
+
     int compressedSize;
     uint8_t *compressed = init.getEncodedData(compressedSize);
     int encodedSize;
@@ -50,7 +66,7 @@ int main(int argc, char *const argv[]) {
         }
     }
 
-    RawFileParser::writeRawImageFile(init.getConfig().getDecodedFilePath(), w, h, &blockList[0][0]);
+    RawFileParser::writeRawImageFile(config.getDecodedFilePath(), w, h, &blockList[0][0]);
 
     delete[] encoded;
 

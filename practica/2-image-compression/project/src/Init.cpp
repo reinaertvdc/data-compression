@@ -2,6 +2,7 @@
 #include "Init.h"
 #include "QuantFileParser.h"
 #include "RawFileParser.h"
+#include "Logger.h"
 #include <iostream>
 #include <unistd.h>
 #include <cstring>
@@ -11,7 +12,7 @@ bool Init::init(int argc, char *const *argv) {
     if (argc != 2) {
         std::string programPath = std::string(argv[0]);
         std::string programFilename = programPath.substr(programPath.find_last_of('/') + 1, programPath.length());
-        std::cerr << "Usage: " << programFilename << " CONFIG_FILE" << std::endl;
+        Logger::severe("Usage: " + programFilename + " CONFIG_FILE");
         return false;
     }
 
@@ -34,16 +35,17 @@ bool Init::init(int argc, char *const *argv) {
     chdir(this->confFileDir.c_str());
     ConfigReader configReader = ConfigReader();
     if (!configReader.read(this->confFileName)) {
-        std::cerr << "Could not read configuration file: " << configReader.getErrorDescription() << std::endl;
+        Logger::severe("Could not read configuration file '" + configReader.getErrorDescription() + "'");
         return false;
     }
 
     // Load configuration
     this->conf = Config(configReader);
     if (this->conf.getMissingKeyCount() > 0) {
-        std::cerr << "Invalid configuration! Missing keys: " << this->conf.getMissingKeysAsString() << std::endl;
+        Logger::severe("Invalid configuration, missing keys '" + this->conf.getMissingKeysAsString() + "'");
         return false;
     }
+
     return true;
 }
 
