@@ -9,7 +9,7 @@ import re
 
 PROMPT = '... '
 SHELL = os.environ.get(key='SHELL', default='sh')
-USE_RLE = True
+USE_RLE = False
 CONFIG_PATH = 'settings.conf'
 QUANT_MATRIX_PATH = 'matrix.txt'
 BUILD_DIR = 'cmake-build-debug'
