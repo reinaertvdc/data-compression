@@ -1,9 +1,7 @@
 #include "Logger.h"
 
-Logger::Level Logger::level = Level::ALL;
-
-bool Logger::logToFile = true;
-bool Logger::logToConsole = true;
+Logger::Level Logger::consoleLevel = Level::INFO;
+Logger::Level Logger::fileLevel = Level::ALL;
 
 std::ofstream Logger::file = std::ofstream();
 
@@ -44,7 +42,7 @@ void Logger::severe(const char *message) {
 }
 
 void Logger::log(Logger::Level level, const char *message) {
-    if (Logger::level > level) { return; }
+    if (level < Logger::consoleLevel && level < Logger::fileLevel ) { return; }
 
     const char *prefix = nullptr;
 
@@ -58,11 +56,11 @@ void Logger::log(Logger::Level level, const char *message) {
 
     std::string out = std::string(prefix) + ": " + message + ".";
 
-    if (logToFile) {
+    if (level >= Logger::fileLevel) {
         file << out << std::endl;
     }
 
-    if (logToConsole) {
+    if (level >= Logger::consoleLevel) {
         ((level >= Level::WARNING) ? std::cerr : std::cout) << out << std::endl;
     }
 }

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import imghdr
 import os
 from typing import Optional, Tuple
@@ -9,7 +11,7 @@ import re
 
 PROMPT = '... '
 SHELL = os.environ.get(key='SHELL', default='sh')
-USE_RLE = False
+USE_RLE = {True: True, False: True}
 CONFIG_PATH = 'settings.conf'
 QUANT_MATRIX_PATH = 'matrix.txt'
 BUILD_DIR = 'cmake-build-debug'
@@ -86,11 +88,11 @@ def main() -> None:
     if not os.path.exists(TEST_DIR):
         os.makedirs(TEST_DIR)
 
-    if len(sys.argv) >= 2 and sys.argv[1] == 'clear':
-        for f in os.listdir(TEST_DIR):
-            if re.search('.*\.in\..*', f) or re.search('.*\.out\..*', f) or re.search('.*\.diff\..*', f) or re.search('.*\.raw', f) or re.search('.*\.enc', f):
-                os.remove(os.path.join(TEST_DIR, f))
-        
+    for f in os.listdir(TEST_DIR):
+        if re.search('.*\.in\..*', f) or re.search('.*\.out\..*', f) or re.search('.*\.diff\..*', f) or re.search('.*\.raw', f) or re.search('.*\.enc', f) or re.search('.*\.log', f):
+            os.remove(os.path.join(TEST_DIR, f))
+
+    if len(sys.argv) >= 2 and sys.argv[1] == 'clear':   
         return
 
     build_all()
@@ -102,43 +104,66 @@ def main() -> None:
                 base_path = file_path.rsplit('.', 1)[0]
                 dimensions = get_image_dimensions(file_path)
 
-                config_file_contents = \
-                    'rawfile=%s.%s.raw\n'\
-                    'encfile=%s.enc\n'\
-                    'decfile=%s.%s.raw\n'\
-                    'width=%i\n'\
-                    'height=%i\n'\
-                    'rle=%s\n'\
-                    'quantfile=%s\n'\
-                    'logfile=%s.log\n' % (
-                        base_path, IN_EXTENSION,
-                        base_path,
-                        base_path, OUT_EXTENSION,
-                        dimensions[0],
-                        dimensions[1],
-                        '1' if USE_RLE else '0',
-                        QUANT_MATRIX_PATH,
-                        base_path
-                    )
-
-                with open(CONFIG_PATH, 'w') as f:
-                    f.write(config_file_contents)
-
                 convert_to_raw(file_path, base_path, dimensions)
                 convert_to_image(base_path + '.' + IN_EXTENSION, base_path +
-                                 '.' + IN_EXTENSION, dimensions)
-                encode()
-                decode()
-                convert_to_image(base_path + '.' + OUT_EXTENSION, base_path + '.' +
-                                 OUT_EXTENSION, dimensions)
-                
-                shell_run('blink-diff --output %s.%s.png %s.%s.png %s.%s.png' % (
-                    base_path, DIFF_EXTENSION,
-                    base_path, IN_EXTENSION,
-                    base_path, OUT_EXTENSION,
-                ))
+                                '.' + IN_EXTENSION, dimensions)
 
-                shell_run('eog %s.%s.png&' % (base_path, DIFF_EXTENSION))
+                for use_rle in USE_RLE:
+                    if not USE_RLE[use_rle]:
+                        continue
+
+                    config_file_contents = \
+                        'rawfile=%s.%s.raw\n'\
+                        'encfile=%s.enc\n'\
+                        'decfile=\n'\
+                        'width=%i\n'\
+                        'height=%i\n'\
+                        'rle=%s\n'\
+                        'quantfile=%s\n'\
+                        'logfile=%s.enc.log\n' % (
+                            base_path, IN_EXTENSION,
+                            base_path + ('.rle' if use_rle else ''),
+                            dimensions[0],
+                            dimensions[1],
+                            '1' if use_rle else '0',
+                            QUANT_MATRIX_PATH,
+                            base_path + ('.rle' if use_rle else '')
+                        )
+
+                    with open(CONFIG_PATH, 'w') as f:
+                        f.write(config_file_contents)
+
+                    encode()
+
+                    config_file_contents = \
+                        'rawfile=\n'\
+                        'encfile=%s.enc\n'\
+                        'decfile=%s.%s.raw\n'\
+                        'width=\n'\
+                        'height=\n'\
+                        'rle=\n'\
+                        'quantfile=\n'\
+                        'logfile=%s.dec.log\n' % (
+                            base_path + ('.rle' if use_rle else ''),
+                            base_path + ('.rle' if use_rle else ''), OUT_EXTENSION,
+                            base_path + ('.rle' if use_rle else '')
+                        )
+
+                    with open(CONFIG_PATH, 'w') as f:
+                        f.write(config_file_contents)
+
+                    decode()
+
+                    convert_to_image(base_path + ('.rle' if use_rle else '') + '.' + OUT_EXTENSION, base_path + ('.rle' if use_rle else '') + '.' +
+                                    OUT_EXTENSION, dimensions)
+                    
+                    shell_run('blink-diff --output %s.%s.png %s.%s.png %s.%s.png' % (
+                        base_path + ('.rle' if use_rle else ''), DIFF_EXTENSION,
+                        base_path, IN_EXTENSION,
+                        base_path + ('.rle' if use_rle else ''), OUT_EXTENSION,
+                    ))
+
+                    shell_run('eog %s.%s.png&' % (base_path + ('.rle' if use_rle else ''), DIFF_EXTENSION))
 
 
 def shell_run(command: str) -> None:

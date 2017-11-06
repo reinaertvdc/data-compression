@@ -8,13 +8,15 @@
 #include "Logger.h"
 
 int main(int argc, char *const argv[]) {
-    std::cout << "DECODER" << std::endl << std::endl;
     Init init(argc, argv);
+
     if (!init.isInitialized()) {
         return 1;
     }
 
     Logger::file.open(init.getConfig().getLogFilePath());
+
+    Logger::info("Decoder started");
 
     int compressedSize;
     uint8_t *compressed = init.getEncodedData(compressedSize);
@@ -51,6 +53,8 @@ int main(int argc, char *const argv[]) {
     RawFileParser::writeRawImageFile(init.getConfig().getDecodedFilePath(), w, h, &blockList[0][0]);
 
     delete[] encoded;
+
+    Logger::info("Decoder finished");
 
     Logger::file.close();
 }

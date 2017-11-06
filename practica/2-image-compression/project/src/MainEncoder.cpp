@@ -8,13 +8,15 @@
 #include "Logger.h"
 
 int main(int argc, char *const argv[]) {
-    std::cout << "ENCODER" << std::endl << std::endl;
     Init init(argc, argv);
+
     if (!init.isInitialized()) {
         return 1;
     }
 
     Logger::file.open(init.getConfig().getLogFilePath());
+
+    Logger::info("Encoder started");
 
     ValueBlock4x4 *raw = init.getRawImage();
     ValueBlock4x4 quant = init.getQuantMatrix();
@@ -34,8 +36,7 @@ int main(int argc, char *const argv[]) {
                 int16_t *rle = RleCodec::rleEncode(zzOutput, 16, len);
                 memcpy(&rleOutput[iRleTmpOut], rle, len * sizeof(int16_t));
                 iRleTmpOut += len;
-            }
-            else {
+            } else {
                 memcpy(&rleOutput[iRleTmpOut], zzOutput, 16 * sizeof(int16_t));
                 iRleTmpOut += 16;
             }
@@ -50,6 +51,8 @@ int main(int argc, char *const argv[]) {
     RawFileParser::writeEncodedFile(init.getConfig().getEncodedFilePath(), size, data);
 
     delete[] data;
+
+    Logger::info("Encoder finished");
 
     Logger::file.close();
 }

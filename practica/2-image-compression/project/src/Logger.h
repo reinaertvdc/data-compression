@@ -12,10 +12,8 @@ public:
         ALL, FINEST, FINER, FINE, CONFIG, INFO, WARNING, SEVERE, OFF
     };
 
-    static Level level;
-
-    static bool logToFile;
-    static bool logToConsole;
+    static Level consoleLevel;
+    static Level fileLevel;
 
     static std::ofstream file;
 

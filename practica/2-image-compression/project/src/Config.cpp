@@ -49,7 +49,7 @@ bool Config::getBool(ConfigReader &configReader, const std::string &key) {
     std::string value;
     bool valueFound = this->getValue(configReader, key, value);
     if (valueFound) {
-        return value == "1" || value == "t" || value == "T" || value == "true" || value == "True";
+        return value == "1" || value == "t" || value == "T" || value == "true" || value == "True" || value == "TRUE";
     }
     else {
         return false;
@@ -60,7 +60,11 @@ int Config::getInt(ConfigReader &configReader, const std::string &key) {
     std::string value;
     bool valueFound = this->getValue(configReader, key, value);
     if (valueFound) {
-        return std::stoi(value);
+        try {
+            return std::stoi(value);
+        } catch (std::exception& e) {
+            return 0;
+        }
     }
     else {
         return 0;
