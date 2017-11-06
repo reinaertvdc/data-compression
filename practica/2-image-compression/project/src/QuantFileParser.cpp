@@ -33,6 +33,7 @@ ValueBlock4x4 QuantFileParser::parseFile(std::string filename) {
     }
     int iRow = 0;
     while (getline(file, line)) {
+        if (line.length() <= 3) continue;
         if (iRow >= 4) continue;
         std::vector<std::string> lineparts = QuantFileParser::splitBySpaces(line);
         if (lineparts.size() < 4) {
