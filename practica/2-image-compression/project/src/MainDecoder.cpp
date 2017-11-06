@@ -44,7 +44,7 @@ int main(int argc, char *const argv[]) {
                 indexEncodedImage += 16;
                 block = ValueBlock4x4(zzPattern);
             }
-            block.deQuantize(init.getQuantMatrix());
+            block.deQuantize(quant);
             block.applyInverseDct();
             blockList[i][j] = block;
         }
