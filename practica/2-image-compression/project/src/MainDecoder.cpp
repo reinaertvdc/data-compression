@@ -46,14 +46,14 @@ int main(int argc, char *const argv[]) {
     ValueBlock4x4 blockList[h / 4][w / 4];
 
     std::stringstream stream;
-    stream << std::fixed << std::setprecision(2) << (double) compressedSize / (config.getWidth() * config.getHeight()) * 100;
+    stream << std::fixed << std::setprecision(2) << (double) compressedSize / (w * h) * 100;
     std::string compressionRatio = stream.str();
 
-    Logger::info(compressionRatio + "% of original size, from " +
-                 std::to_string((int) round((double) (config.getWidth() * config.getHeight()) / 1000)) + "KB to " +
+    Logger::info("  " + compressionRatio + "% of original size, from " +
+                 std::to_string((int) round((double) (w * h) / 1000)) + "KB to " +
                  std::to_string((int) round((double) (compressedSize / 1000))) + "KB");
 
-    Logger::info("Image appears to be " + std::to_string(w) + "x" + std::to_string(h) + ", " + (rle ? "and" : "not") +
+    Logger::info("  " + std::to_string(w) + "x" + std::to_string(h) + ", " + (rle ? "and" : "not") +
                  " run-length encoded");
 
     Logger::info("Quantization matrix:");
