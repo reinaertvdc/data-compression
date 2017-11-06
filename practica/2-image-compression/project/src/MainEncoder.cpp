@@ -51,24 +51,5 @@ int main(int argc, char *const argv[]) {
 
     delete[] data;
 
-//    int tmpSize;
-//    int tmpW;
-//    int tmpH;
-//    bool tmpRle;
-//    ValueBlock4x4 tmpQuant;
-//    int16_t * test = StorageFormatCodec::fromStorageFormat(data, size, tmpSize, tmpW, tmpH, tmpRle, tmpQuant);
-//
-//    if (tmpSize != iRleTmpOut) {
-//        std::cout << "ERROR " << tmpSize << " != " << iRleTmpOut << std::endl;
-//    }
-//    else {
-//        for (int i = 0; i < tmpSize && i < iRleTmpOut; i++) {
-//            if (rleOutput[i] != test[i]) {
-//                std::cout << "ERROR" << i << std::endl;
-//            }
-//            break;
-//        }
-//    }
-
     Logger::file.close();
 }
