@@ -5,6 +5,7 @@
 #include "RawFileParser.h"
 #include "RleCodec.h"
 #include "StorageFormatCodec.h"
+#include "Logger.h"
 
 int main(int argc, char *const argv[]) {
     std::cout << "DECODER" << std::endl << std::endl;
@@ -12,6 +13,8 @@ int main(int argc, char *const argv[]) {
     if (!init.isInitialized()) {
         return 1;
     }
+
+    Logger::file.open(init.getConfig().getLogFilePath());
 
     int compressedSize;
     uint8_t *compressed = init.getEncodedData(compressedSize);
@@ -49,4 +52,5 @@ int main(int argc, char *const argv[]) {
 
     delete[] encoded;
 
+    Logger::file.close();
 }

@@ -5,6 +5,7 @@
 #include "RawFileParser.h"
 #include "RleCodec.h"
 #include "StorageFormatCodec.h"
+#include "Logger.h"
 
 int main(int argc, char *const argv[]) {
     std::cout << "ENCODER" << std::endl << std::endl;
@@ -12,6 +13,8 @@ int main(int argc, char *const argv[]) {
     if (!init.isInitialized()) {
         return 1;
     }
+
+    Logger::file.open(init.getConfig().getLogFilePath());
 
     ValueBlock4x4 *raw = init.getRawImage();
     ValueBlock4x4 quant = init.getQuantMatrix();
@@ -48,4 +51,5 @@ int main(int argc, char *const argv[]) {
 
     delete[] data;
 
+    Logger::file.close();
 }
