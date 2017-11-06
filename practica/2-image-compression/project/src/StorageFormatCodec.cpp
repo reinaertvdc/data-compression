@@ -286,6 +286,7 @@ int16_t *StorageFormatCodec::fromStorageFormat(uint8_t *data, int size, int &out
                     if (dcValNeg) dcVal = -dcValAbs;
                     else dcVal = dcValAbs;
                 }
+                tmpData.emplace_back(dcVal);
                 int offsetBitSize = static_cast<int>(inBits.get(4));
                 int offset = 0;
                 if (offsetBitSize > 0) {
