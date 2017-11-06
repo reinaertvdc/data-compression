@@ -26,7 +26,10 @@ private:
     std::string quantMatrixFilePath;
     std::string logFilePath;
 public:
-    //TODO
+    /**
+     * Default contructors
+     * Sets all values as missing
+     */
     Config();
     /**
      * Constructor
@@ -49,16 +52,54 @@ public:
      * @return std::string containing all missing keys (comma-seperated)
      */
     const std::string getMissingKeysAsString() const;
+    /**
+     * Getter for the raw file path
+     * @return std::string reference to the raw file path
+     */
     const std::string &getRawFilePath() const { return this->rawFilePath; }
+    /**
+     * Getter for the encoded file path
+     * @return std::string reference to the encoded file path
+     */
     const std::string &getEncodedFilePath() const { return this->encodedFilePath; }
+    /**
+     * Getter for the decoded file path
+     * @return std::string reference to the decoded file path
+     */
     const std::string &getDecodedFilePath() const { return this->decodedFilePath; }
+    /**
+     * Getter for the quantization matrix file path
+     * @return std::string reference to the quantization matrix file path
+     */
     const std::string &getQuantMatrixFilePath() const { return this->quantMatrixFilePath; }
+    /**
+     * Getter for the logfile path
+     * @return std::string reference to the logfile path
+     */
     const std::string &getLogFilePath() const { return this->logFilePath; }
+    /**
+     * Getter for the width of the image (in pixels)
+     * @return int the width of the image in pixels
+     */
     const int getWidth() const { return this->width; }
+    /**
+     * Getter for the height of the image (in pixels)
+     * @return int the height of the image in pixels
+     */
     const int getHeight() const { return this->height; }
+    /**
+     *Getter for the boolean that specifies is rle should be used by the encoder or not
+     * @return bool true if rle should be used, false otherwise
+     */
     const bool getApplyRle() const { return this->applyRle; }
-    //TODO
+    /**
+     * Assignment operator, copies all values to this object (deep copy)
+     * @return *this
+     */
     Config& operator=(Config&&);
+    /**
+     * Copies all values to this (new) object (deep copy)
+     */
     Config(const Config&);
 private:
     /**
