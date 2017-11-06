@@ -31,8 +31,23 @@ int main(int argc, char *const argv[]) {
             ValueBlock4x4 block;
             if (rle) {
                 zzPattern = RleCodec::rleDecode(&encoded[indexEncodedImage], 16, tmpInSizeUsed);
+                if (i == 65 && j == 124) {
+                    for (int k = 0; k < 16; k++) {
+                        std::cout << zzPattern[k] << "\t";
+                    }
+                    std::cout << std::endl << std::endl;
+                }
                 indexEncodedImage += tmpInSizeUsed;
                 block = ValueBlock4x4(zzPattern);
+                if (i == 65 && j == 124) {
+                    for (int r = 0; r < 4; r++) {
+                        for (int c = 0; c < 4; c++) {
+                            std::cout << block.getValue(r, c) << "\t";
+                        }
+                        std::cout << std::endl;
+                    }
+                    std::cout << std::endl;
+                }
                 delete[] zzPattern;
             } else {
                 zzPattern = &encoded[indexEncodedImage];
@@ -40,7 +55,25 @@ int main(int argc, char *const argv[]) {
                 block = ValueBlock4x4(zzPattern);
             }
             block.deQuantize(init.getQuantMatrix());
+            if (i == 65 && j == 124) {
+                for (int r = 0; r < 4; r++) {
+                    for (int c = 0; c < 4; c++) {
+                        std::cout << block.getValue(r, c) << "\t";
+                    }
+                    std::cout << std::endl;
+                }
+                std::cout << std::endl;
+            }
             block.applyInverseDct();
+            if (i == 65 && j == 124) {
+                for (int r = 0; r < 4; r++) {
+                    for (int c = 0; c < 4; c++) {
+                        std::cout << block.getValue(r, c) << "\t";
+                    }
+                    std::cout << std::endl;
+                }
+                std::cout << std::endl;
+            }
             blockList[i][j] = block;
         }
     }

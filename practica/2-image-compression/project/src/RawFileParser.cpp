@@ -3,6 +3,7 @@
 #include <cstring>
 #include <iostream>
 #include <vector>
+#include <iterator>
 #include "RawFileParser.h"
 
 
@@ -10,17 +11,22 @@ ValueBlock4x4 *RawFileParser::readRawImageFile(std::string filename, int width, 
     if (width % 4 != 0) return nullptr;
     if (height % 4 != 0) return nullptr;
     ValueBlock4x4 *image = new ValueBlock4x4[(width / 4) * (height / 4)];
-    std::ifstream file(filename, std::ios::in | std::ios::binary);
+    std::basic_ifstream<uint8_t> file(filename, std::ios::binary);
     if (!file.is_open()) return nullptr;
     for (int rowMajor = 0; rowMajor < height / 4; rowMajor++) {
         for (int rowMinor = 0; rowMinor < 4; rowMinor++) {
             for (int colMajor = 0; colMajor < width / 4; colMajor++) {
-                char tmp[4];
-                file.read(tmp, 4 * sizeof(char));
+                uint8_t tmp[4];
                 for (int colMinor = 0; colMinor < 4; colMinor++) {
+//                    if (rowMajor == 65 && colMajor == 124) {
+//                        std::cout << static_cast<int>(tmp[colMinor]) << "\t";
+//                    }
                     image[rowMajor * width / 4 + colMajor].getData()[rowMinor * 4 +
-                                                                     colMinor] = static_cast<int16_t>((unsigned char) tmp[colMinor]);
+                                                                     colMinor] = static_cast<int16_t>(tmp[colMinor]);
                 }
+//                if (rowMajor == 65 && colMajor == 124) {
+//                    std::cout << std::endl;
+//                }
             }
         }
         for (int colMajor = 0; colMajor < width / 4; colMajor++) {
@@ -32,44 +38,52 @@ ValueBlock4x4 *RawFileParser::readRawImageFile(std::string filename, int width, 
 }
 
 uint8_t *RawFileParser::readEncodedFile(std::string filename, int &size) {
-    std::vector<uint8_t> data;
-    std::ifstream file(filename, std::ios::in | std::ios::binary);
+    std::basic_ifstream<uint8_t> file(filename, std::ios::binary);
     if (!file.is_open()) return nullptr;
-    while (!file.eof()) {
-        char tmp;
-        file.read(&tmp, sizeof(char));
-        data.emplace_back(static_cast<uint8_t>(tmp));
-    }
-    file.close();
-    size = static_cast<int>(data.size());
+    uint8_t sizeArray[4];
+    file.read(&sizeArray[0], sizeof(uint8_t));
+    file.read(&sizeArray[1], sizeof(uint8_t));
+    file.read(&sizeArray[2], sizeof(uint8_t));
+    file.read(&sizeArray[3], sizeof(uint8_t));
+    size = static_cast<int>(sizeArray[0]) * 16777216 + static_cast<int>(sizeArray[1]) * 65536 + static_cast<int>(sizeArray[2]) * 256 + static_cast<int>(sizeArray[3]);
+    std::cout << "SIZE: " << size << std::endl;
     uint8_t *dataArray = new uint8_t[size];
-    memcpy(dataArray, &data[0], sizeof(uint8_t) * size);
+    file.read(dataArray, sizeof(uint8_t)*size);
+    file.close();
     return dataArray;
 }
 
 bool RawFileParser::writeEncodedFile(std::string filename, int size, uint8_t *data) {
-    std::ofstream file(filename, std::ofstream::out | std::ofstream::binary);
+    std::cout << filename << std::endl;
+    std::basic_ofstream<uint8_t> file(filename, std::ios::binary);
     if (!file.is_open()) return false;
-    for (int i = 0; i < size; i++) {
-        char tmp = static_cast<char>(data[i]);
-        file.write(&tmp, sizeof(char));
-    }
+    uint8_t sizeArray[4] = {static_cast<uint8_t>(size / 16777216), static_cast<uint8_t>((size % 16777216) / 65536), static_cast<uint8_t>((size % 65536) / 256), static_cast<uint8_t>(size % 256)};
+    std::cout << "SIZE: " << sizeArray[0] * 16777216 + sizeArray[1] * 65536 + sizeArray[2] * 256 + sizeArray[3] << std::endl;
+    file.write(&sizeArray[0], 1);
+    file.write(&sizeArray[1], 1);
+    file.write(&sizeArray[2], 1);
+    file.write(&sizeArray[3], 1);
+    std::cout << static_cast<int>(sizeArray[0]) << "\t";
+    std::cout << static_cast<int>(sizeArray[1]) << "\t";
+    std::cout << static_cast<int>(sizeArray[2]) << "\t";
+    std::cout << static_cast<int>(sizeArray[3]) << "\t";
+    file.write(data, sizeof(uint8_t) * size);
     file.close();
     return true;
 }
 
 bool RawFileParser::writeRawImageFile(std::string filename, int width, int height, ValueBlock4x4 *data) {
-    std::ofstream file(filename, std::ofstream::out | std::ofstream::binary);
+    std::basic_ofstream<uint8_t> file(filename, std::ofstream::out | std::ofstream::binary);
     if (!file.is_open()) return false;
     for (int rowMajor = 0; rowMajor < height / 4; rowMajor++) {
         for (int rowMinor = 0; rowMinor < 4; rowMinor++) {
             for (int colMajor = 0; colMajor < width / 4; colMajor++) {
-                char tmp[4];
+                uint8_t tmp[4];
                 for (int colMinor = 0; colMinor < 4; colMinor++) {
-                    tmp[colMinor] = (char) (static_cast<unsigned char>(data[rowMajor * width / 4 + colMajor].getData()[
-                            rowMinor * 4 + colMinor]));
+                    tmp[colMinor] = static_cast<uint8_t>(data[rowMajor * width / 4 + colMajor].getData()[
+                            rowMinor * 4 + colMinor]);
                 }
-                file.write(tmp, 4 * sizeof(char));
+                file.write(tmp, 4 * sizeof(uint8_t));
             }
         }
     }

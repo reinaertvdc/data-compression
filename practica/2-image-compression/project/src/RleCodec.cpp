@@ -1,15 +1,12 @@
-//
-// Created by cwout on 19/10/17.
-//
 
 #include <vector>
 #include <cstring>
 #include <iostream>
 #include "RleCodec.h"
 
-int16_t *RleCodec::rleEncode(int16_t *in, int size, int &outSize) {
+int16_t *RleCodec::rleEncode(int16_t *in, int size, int &outSize, bool debug) {
     int nonZeroSize = size;
-    while (nonZeroSize > 0 && in[nonZeroSize] != 0) {
+    while (nonZeroSize > 0 && static_cast<int>(in[nonZeroSize-1]) == 0) {
         nonZeroSize--;
     }
     std::vector<int16_t> tmpOut;
