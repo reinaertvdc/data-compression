@@ -5,9 +5,12 @@
 #include <vector>
 #include <iterator>
 #include "RawFileParser.h"
+#include "Logger.h"
 
 
 ValueBlock4x4 *RawFileParser::readRawImageFile(std::string filename, int width, int height) {
+    Logger::info("Loading " +  std::to_string(width) + "x" + std::to_string(height) + " image '" + filename + "' into 4x4 pixel blocks");
+
     if (width % 4 != 0) return nullptr;
     if (height % 4 != 0) return nullptr;
     ValueBlock4x4 *image = new ValueBlock4x4[(width / 4) * (height / 4)];
@@ -42,6 +45,9 @@ uint8_t *RawFileParser::readEncodedFile(std::string filename, int &size) {
     file.read(reinterpret_cast<char *>(&sizeArray[3]), sizeof(uint8_t));
     size = static_cast<int>(sizeArray[0]) * 16777216 + static_cast<int>(sizeArray[1]) * 65536 +
            static_cast<int>(sizeArray[2]) * 256 + static_cast<int>(sizeArray[3]);
+
+    Logger::info("Loading " +  std::to_string(size) + " bytes of compressed image data from '" + filename + "'");
+
     uint8_t *dataArray = new uint8_t[size];
     file.read(reinterpret_cast<char *>(dataArray), size);
     file.close();
@@ -49,6 +55,8 @@ uint8_t *RawFileParser::readEncodedFile(std::string filename, int &size) {
 }
 
 bool RawFileParser::writeEncodedFile(std::string filename, int size, uint8_t *data) {
+    Logger::info("Writing " + std::to_string(size) + " bytes of compressed image data to '" + filename + "'");
+
     std::ofstream file(filename, std::ios::binary);
     if (!file.is_open()) return false;
     uint8_t sizeArray[4] = {static_cast<uint8_t>(size / 16777216), static_cast<uint8_t>((size % 16777216) / 65536),
@@ -63,6 +71,8 @@ bool RawFileParser::writeEncodedFile(std::string filename, int size, uint8_t *da
 }
 
 bool RawFileParser::writeRawImageFile(std::string filename, int width, int height, ValueBlock4x4 *data) {
+    Logger::info("Writing " + std::to_string(width * height) + " bytes of raw image data to '" + filename + "'");
+
     std::ofstream file(filename, std::ofstream::binary);
     if (!file.is_open()) return false;
     for (int rowMajor = 0; rowMajor < height / 4; rowMajor++) {
