@@ -38,36 +38,31 @@ ValueBlock4x4 *RawFileParser::readRawImageFile(std::string filename, int width, 
 }
 
 uint8_t *RawFileParser::readEncodedFile(std::string filename, int &size) {
-    std::basic_ifstream<uint8_t> file(filename, std::ios::binary);
+    std::ifstream file(filename, std::ios::binary);
     if (!file.is_open()) return nullptr;
     uint8_t sizeArray[4];
-    file.read(&sizeArray[0], sizeof(uint8_t));
-    file.read(&sizeArray[1], sizeof(uint8_t));
-    file.read(&sizeArray[2], sizeof(uint8_t));
-    file.read(&sizeArray[3], sizeof(uint8_t));
+    file.read(reinterpret_cast<char *>(&sizeArray[0]), sizeof(uint8_t));
+    file.read(reinterpret_cast<char *>(&sizeArray[1]), sizeof(uint8_t));
+    file.read(reinterpret_cast<char *>(&sizeArray[2]), sizeof(uint8_t));
+    file.read(reinterpret_cast<char *>(&sizeArray[3]), sizeof(uint8_t));
     size = static_cast<int>(sizeArray[0]) * 16777216 + static_cast<int>(sizeArray[1]) * 65536 + static_cast<int>(sizeArray[2]) * 256 + static_cast<int>(sizeArray[3]);
     std::cout << "SIZE: " << size << std::endl;
     uint8_t *dataArray = new uint8_t[size];
-    file.read(dataArray, sizeof(uint8_t)*size);
+    file.read(reinterpret_cast<char *>(dataArray), size);
     file.close();
     return dataArray;
 }
 
 bool RawFileParser::writeEncodedFile(std::string filename, int size, uint8_t *data) {
     std::cout << filename << std::endl;
-    std::basic_ofstream<uint8_t> file(filename, std::ios::binary);
+    std::ofstream file(filename, std::ios::binary);
     if (!file.is_open()) return false;
     uint8_t sizeArray[4] = {static_cast<uint8_t>(size / 16777216), static_cast<uint8_t>((size % 16777216) / 65536), static_cast<uint8_t>((size % 65536) / 256), static_cast<uint8_t>(size % 256)};
-    std::cout << "SIZE: " << sizeArray[0] * 16777216 + sizeArray[1] * 65536 + sizeArray[2] * 256 + sizeArray[3] << std::endl;
-    file.write(&sizeArray[0], 1);
-    file.write(&sizeArray[1], 1);
-    file.write(&sizeArray[2], 1);
-    file.write(&sizeArray[3], 1);
-    std::cout << static_cast<int>(sizeArray[0]) << "\t";
-    std::cout << static_cast<int>(sizeArray[1]) << "\t";
-    std::cout << static_cast<int>(sizeArray[2]) << "\t";
-    std::cout << static_cast<int>(sizeArray[3]) << "\t";
-    file.write(data, sizeof(uint8_t) * size);
+    file.write(reinterpret_cast<const char *>(&sizeArray[0]), 1);
+    file.write(reinterpret_cast<const char *>(&sizeArray[1]), 1);
+    file.write(reinterpret_cast<const char *>(&sizeArray[2]), 1);
+    file.write(reinterpret_cast<const char *>(&sizeArray[3]), 1);
+    file.write(reinterpret_cast<const char *>(data), size);
     file.close();
     return true;
 }
