@@ -3,11 +3,6 @@ project(3_video_compression)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(SOURCE_FILES src/configreader.cpp src/BitStream.cpp src/ValueBlock4x4.cpp src/QuantFileParser.cpp src/Config.cpp src/Init.cpp src/RawFileParser.cpp src/RawFileParser.h src/RleCodec.cpp src/RleCodec.h src/StorageFormatCodec.cpp src/StorageFormatCodec.h src/Logger.cpp src/Logger.h)
-set(SOURCE_FILES_ENCODER src/MainEncoder.cpp)
-set(SOURCE_FILES_DECODER src/MainDecoder.cpp)
-#set(SOURCE_FILES_CODEC src/MainCodec.cpp)
-
-add_executable(encoder ${SOURCE_FILES} ${SOURCE_FILES_ENCODER})
-add_executable(decoder ${SOURCE_FILES} ${SOURCE_FILES_DECODER})
-#add_executable(codec ${SOURCE_FILES} ${SOURCE_FILES_CODEC})
+set(SOURCE_FILES src/frames/Frame.cpp src/frames/Frame.h src/frames/IFrame.cpp src/frames/IFrame.h src/frames/PFrame.cpp src/frames/PFrame.h src/configs/Config.cpp src/configs/Config.h src/main/Codec.cpp src/main/Codec.h src/helpers/Logger.cpp src/helpers/Logger.h src/helpers/BitStream.cpp src/helpers/BitStream.h src/configs/EncoderConfig.cpp src/configs/EncoderConfig.h src/configs/DecoderConfig.cpp src/configs/DecoderConfig.h src/helpers/ValueBlock4x4.cpp src/helpers/ValueBlock4x4.h src/helpers/QuantFileParser.cpp src/helpers/QuantFileParser.h)
+add_executable(encoder src/main/encoder.cpp ${SOURCE_FILES})
+add_executable(decoder src/main/decoder.cpp ${SOURCE_FILES})

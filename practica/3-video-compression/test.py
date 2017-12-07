@@ -10,7 +10,7 @@ from typing import Any, Dict, List
 
 
 BUILD_DIR = 'cmake-build-debug'
-TEST_DIR = 'test'
+TEST_DIR = 'tests'
 
 
 class DecoderConf:
@@ -47,15 +47,28 @@ class EncoderConf:
 
 
 def build() -> None:
-    call_wait('cmake --build ' + BUILD_DIR + ' --target all -- -j 4')
+    call_wait(['cmake', '--build', BUILD_DIR, '--target', 'all', '--', '-j', '4'])
 
 
 def call(command: List[str]) -> None:
     subprocess.Popen(command, stdout=DEVNULL, stderr=DEVNULL)
 
 
-def call_wait(command: List[str]) -> int:
-    return subprocess.call(command, stdout=DEVNULL, stderr=DEVNULL)
+def call_wait(command: List[str], working_dir: str=None, silent: bool=True) -> int:
+    cwd = os.getcwd()
+
+    if working_dir is not None:
+        os.chdir(cwd + '/' + working_dir)
+
+    if silent:
+        result = subprocess.call(command, stdout=DEVNULL, stderr=DEVNULL)
+    else:
+        result = subprocess.call(command)
+
+    if working_dir is not None:
+        os.chdir(cwd)
+    
+    return result
 
 
 def conf_read(path: str) -> Dict[str, str]:
@@ -82,12 +95,12 @@ def conf_write(path: str, conf: Dict[str, Any]) -> None:
             conf_file.write('%s=%s\n' % (key, str(value)))
 
 
-def decode(conf_path: str) -> int:
-    return call_wait(['%s/decoder' % BUILD_DIR, conf_path])
+def decode(conf_path: str, working_dir: str) -> int:
+    return call_wait([os.getcwd() + '/%s/decoder' % BUILD_DIR, conf_path], working_dir=working_dir, silent=False)
 
 
-def encode(conf_path: str) -> int:
-    return call_wait(['%s/encoder' % BUILD_DIR, conf_path])
+def encode(conf_path: str, working_dir: str) -> int:
+    return call_wait([os.getcwd() + '/%s/encoder' % BUILD_DIR, conf_path], working_dir=working_dir, silent=False)
 
 
 def vlc_open_yuv(video_path: str, width: int, height: int, fps: int=25) -> int:
@@ -103,7 +116,9 @@ def vlc_open_yuv(video_path: str, width: int, height: int, fps: int=25) -> int:
 
 
 def main() -> None:
-    for path in glob.iglob('%s/**/*.enc.conf' % TEST_DIR):
+    build()
+
+    for path in sorted(glob.iglob('%s/**/*.enc.conf' % TEST_DIR)):
         directory, name = path[0:-len('.enc.conf')].rsplit('/', 1)
         base_path = '%s/%s' % (directory, name)
 
@@ -118,13 +133,19 @@ def main() -> None:
 
         if not os.path.isfile(encoder_conf.quantfile):
             if not os.path.isdir('%s/%s' % (directory, os.path.dirname(encoder_conf.quantfile))):
-                os.makedirs('%s/%s' % (directory, os.path.dirname(encoder_conf.quantfile)))
+                os.makedirs('%s/%s' %
+                            (directory, os.path.dirname(encoder_conf.quantfile)))
 
             with open('%s/%s' % (directory, encoder_conf.quantfile), 'w') as f:
-                f.write('2 4 8 16\n' +
-                        '4 4 8 16\n' +
-                        '8 8 32 64\n' +
-                        '16 32 64 128')
+                f.write('2 4 8 16\n' +
+                        '4 4 8 16\n' +
+                        '8 8 32 64\n' +
+                        '16 32 64 128')
+        
+        print('\n' + directory)
+
+        encode('%s.enc.conf' % name, directory)
+        decode('%s.dec.conf' % name, directory)
 
         #vlc_open_yuv(path, 352, 288)
 

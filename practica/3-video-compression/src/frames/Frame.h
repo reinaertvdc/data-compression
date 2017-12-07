@@ -1,0 +1,10 @@
+#ifndef INC_3_VIDEO_COMPRESSION_FRAME_H
+#define INC_3_VIDEO_COMPRESSION_FRAME_H
+
+
+class Frame {
+
+};
+
+
+#endif //INC_3_VIDEO_COMPRESSION_FRAME_H
