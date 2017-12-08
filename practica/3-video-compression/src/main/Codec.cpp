@@ -1,9 +1,13 @@
+#include <fstream>
+#include <cstring>
+#include <iostream>
 #include "Codec.h"
 #include "../configs/Config.h"
 #include "../helpers/Logger.h"
 #include "../configs/EncoderConfig.h"
 #include "../configs/DecoderConfig.h"
 #include "../helpers/QuantFileParser.h"
+#include "../frames/Frame.h"
 
 int Codec::run(Action action, int argc, char *const *argv) {
     if (argc != 2) {
@@ -22,10 +26,31 @@ int Codec::encode(const std::string &configFilePath) {
 
     ValueBlock4x4 quant = QuantFileParser::parseFile(config.quantfile);
 
-    for (int i = 0; i < 4; i++) {
-        Logger::info("  " + std::to_string(quant.getValue(i, 0)) + "\t" + std::to_string(quant.getValue(i, 1)) + "\t" +
-                     std::to_string(quant.getValue(i, 2)) + "\t" + std::to_string(quant.getValue(i, 3)));
+    std::ifstream f(config.rawfile, std::ios::binary | std::ios::ate);
+    long fileSize = f.tellg();
+    f.close();
+
+    auto frameSize = (int)(1.5 * (config.width * config.height));
+    auto numFrames = (int)(fileSize/frameSize);
+
+    std::ifstream rawFile(config.rawfile, std::ios::binary);
+    std::ofstream encFile(config.encfile, std::ios::binary);
+
+    for (int i = 0; i < numFrames; i++) {
+        uint8_t inBuffer[frameSize];
+        uint8_t outBuffer[frameSize];
+
+        rawFile.read(reinterpret_cast<char *>(inBuffer), frameSize);
+
+        Frame frame(inBuffer, config.width, config.height);
+
+        frame.raw(outBuffer);
+
+        encFile.write(reinterpret_cast<const char *>(outBuffer), frameSize);
     }
+
+    rawFile.close();
+    encFile.close();
 
     return 0;
 }
