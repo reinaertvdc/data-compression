@@ -30,8 +30,8 @@ int Codec::encode(const std::string &configFilePath) {
     long fileSize = f.tellg();
     f.close();
 
-    auto frameSize = (int)(1.5 * (config.width * config.height));
-    auto numFrames = (int)(fileSize/frameSize);
+    auto frameSize = (int)(config.width * config.height * 1.5);
+    auto numFrames = (int)(fileSize / frameSize);
 
     std::ifstream rawFile(config.rawfile, std::ios::binary);
     std::ofstream encFile(config.encfile, std::ios::binary);
