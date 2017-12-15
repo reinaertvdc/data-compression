@@ -103,7 +103,7 @@ def encode(conf_path: str, working_dir: str) -> int:
     return call_wait([os.getcwd() + '/%s/encoder' % BUILD_DIR, conf_path], working_dir=working_dir, silent=False)
 
 
-def vlc_open_yuv(video_path: str, width: int, height: int, fps: int=25) -> int:
+def vlc_open_yuv(video_path: str, width: int, height: int, fps: int=25) -> int:    
     call([
         'vlc',
         '--demux', 'rawvideo',
@@ -147,7 +147,7 @@ def main() -> None:
         encode('%s.enc.conf' % name, directory)
         decode('%s.dec.conf' % name, directory)
 
-        #vlc_open_yuv(path, 352, 288)
+        vlc_open_yuv('%s/%s.out.yuv' % (directory, name), 352, 288)
 
 
 main()

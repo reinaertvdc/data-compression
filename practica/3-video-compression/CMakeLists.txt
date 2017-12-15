@@ -3,6 +3,6 @@ project(3_video_compression)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(SOURCE_FILES src/frames/Frame.cpp src/frames/Frame.h src/frames/IFrame.cpp src/frames/IFrame.h src/frames/PFrame.cpp src/frames/PFrame.h src/configs/Config.cpp src/configs/Config.h src/main/Codec.cpp src/main/Codec.h src/helpers/Logger.cpp src/helpers/Logger.h src/helpers/BitStream.cpp src/helpers/BitStream.h src/configs/EncoderConfig.cpp src/configs/EncoderConfig.h src/configs/DecoderConfig.cpp src/configs/DecoderConfig.h src/helpers/ValueBlock4x4.cpp src/helpers/ValueBlock4x4.h src/helpers/QuantFileParser.cpp src/helpers/QuantFileParser.h)
-add_executable(encoder src/main/encoder.cpp ${SOURCE_FILES})
-add_executable(decoder src/main/decoder.cpp ${SOURCE_FILES})
+set(SOURCE_FILES src/Frame.cpp src/Frame.h src/Config.cpp src/Config.h src/Codec.cpp src/Codec.h src/Logger.cpp src/Logger.h src/BitStream.cpp src/BitStream.h src/EncoderConfig.cpp src/EncoderConfig.h src/DecoderConfig.cpp src/DecoderConfig.h src/ValueBlock4x4.cpp src/ValueBlock4x4.h src/QuantFileParser.cpp src/QuantFileParser.h src/VideoCodec.cpp src/VideoCodec.h)
+add_executable(encoder src/encoder.cpp ${SOURCE_FILES})
+add_executable(decoder src/decoder.cpp ${SOURCE_FILES})

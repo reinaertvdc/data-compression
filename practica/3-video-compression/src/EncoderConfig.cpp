@@ -1,5 +1,5 @@
 #include "EncoderConfig.h"
-#include "../helpers/Logger.h"
+#include "Logger.h"
 
 EncoderConfig::EncoderConfig(const std::string &filePath) : Config(filePath),
                                                             rawfile(getString("rawfile")),

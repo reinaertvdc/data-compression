@@ -1,6 +1,6 @@
 #include <cstring>
 #include "Config.h"
-#include "../helpers/Logger.h"
+#include "Logger.h"
 
 #define MAX_LINE_LENGTH 16384
 

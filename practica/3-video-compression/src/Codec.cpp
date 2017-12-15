@@ -2,12 +2,12 @@
 #include <cstring>
 #include <iostream>
 #include "Codec.h"
-#include "../configs/Config.h"
-#include "../helpers/Logger.h"
-#include "../configs/EncoderConfig.h"
-#include "../configs/DecoderConfig.h"
-#include "../helpers/QuantFileParser.h"
-#include "../frames/Frame.h"
+#include "Config.h"
+#include "Logger.h"
+#include "EncoderConfig.h"
+#include "DecoderConfig.h"
+#include "QuantFileParser.h"
+#include "VideoCodec.h"
 
 int Codec::run(Action action, int argc, char *const *argv) {
     if (argc != 2) {
@@ -22,32 +22,19 @@ int Codec::run(Action action, int argc, char *const *argv) {
 
 int Codec::encode(const std::string &configFilePath) {
     EncoderConfig config(configFilePath);
+
     if (!config.isLoaded()) { return -1; }
 
     ValueBlock4x4 quant = QuantFileParser::parseFile(config.quantfile);
 
-    std::ifstream f(config.rawfile, std::ios::binary | std::ios::ate);
-    long fileSize = f.tellg();
-    f.close();
-
-    auto frameSize = (int)(config.width * config.height * 1.5);
-    auto numFrames = (int)(fileSize / frameSize);
+    std::ifstream tempRawFile(config.rawfile, std::ios::binary | std::ios::ate);
+    long rawSize = tempRawFile.tellg();
+    tempRawFile.close();
 
     std::ifstream rawFile(config.rawfile, std::ios::binary);
     std::ofstream encFile(config.encfile, std::ios::binary);
 
-    for (int i = 0; i < numFrames; i++) {
-        uint8_t inBuffer[frameSize];
-        uint8_t outBuffer[frameSize];
-
-        rawFile.read(reinterpret_cast<char *>(inBuffer), frameSize);
-
-        Frame frame(inBuffer, config.width, config.height);
-
-        frame.raw(outBuffer);
-
-        encFile.write(reinterpret_cast<const char *>(outBuffer), frameSize);
-    }
+    VideoCodec().encode(rawFile, rawSize, encFile, config.width, config.height, config.rle, quant, config.gop, config.merange);
 
     rawFile.close();
     encFile.close();
@@ -57,7 +44,20 @@ int Codec::encode(const std::string &configFilePath) {
 
 int Codec::decode(const std::string &configFilePath) {
     DecoderConfig config(configFilePath);
+
     if (!config.isLoaded()) { return -1; }
+
+    std::ifstream tempEncFile(config.encfile, std::ios::binary | std::ios::ate);
+    long encSize = tempEncFile.tellg();
+    tempEncFile.close();
+
+    std::ifstream encFile(config.encfile, std::ios::binary);
+    std::ofstream decFile(config.decfile, std::ios::binary);
+
+    VideoCodec().decode(encFile, encSize, decFile, config.motioncompensation);
+
+    encFile.close();
+    decFile.close();
 
     return 0;
 }
