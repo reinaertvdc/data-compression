@@ -34,7 +34,9 @@ int Codec::encode(const std::string &configFilePath) {
     std::ifstream rawFile(config.rawfile, std::ios::binary);
     std::ofstream encFile(config.encfile, std::ios::binary);
 
-    VideoCodec().encode(rawFile, rawSize, encFile, config.width, config.height, config.rle, quant, config.gop, config.merange);
+    VideoCodec().encode(rawFile, rawSize, encFile,
+                        (uint16_t) config.width, (uint16_t) config.height,
+                        config.rle, quant, (uint16_t) config.gop, (uint16_t) config.merange);
 
     rawFile.close();
     encFile.close();

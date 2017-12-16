@@ -100,3 +100,17 @@ ValueBlock4x4::ValueBlock4x4(const int16_t *array) {
     }
     this->setFilled();
 }
+
+void ValueBlock4x4::fromUint8Buffer(const uint8_t *buffer) {
+    for (int i = 0; i < 16; i++) {
+        matrix[i % 4][i / 4] = buffer[i];
+    }
+
+    setFilled();
+}
+
+void ValueBlock4x4::toUint8Buffer(uint8_t *buffer) const {
+    for (int i = 0; i < 16; i++) {
+        buffer[i] = (uint8_t) matrix[i % 4][i / 4];
+    }
+}

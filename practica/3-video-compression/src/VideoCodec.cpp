@@ -2,34 +2,80 @@
 #include "VideoCodec.h"
 #include "Frame.h"
 
-bool VideoCodec::encode(std::ifstream &in, long inEnd, std::ofstream &out, int width, int height, bool rle,
-                            ValueBlock4x4 &quantMatrix, int gop, int merange) {
-    out.write(reinterpret_cast<char *>(&width), sizeof(int));
-    out.write(reinterpret_cast<char *>(&height), sizeof(int));
+bool VideoCodec::encode(std::ifstream &in, long inEnd, std::ofstream &out, uint16_t width, uint16_t height, bool rle,
+                        ValueBlock4x4 &quantMatrix, uint16_t gop, uint16_t merange) {
+    uint8_t configBuffer[24];
 
-    Frame frame = Frame();
+    ((uint16_t*) configBuffer)[0] = width;
+    ((uint16_t*) configBuffer)[1] = height;
+    ((uint16_t*) configBuffer)[2] = gop;
+    ((uint16_t*) configBuffer)[3] = merange;
+
+    if (rle) {
+        ((uint16_t*) configBuffer)[2] += 32768;
+    }
+
+    quantMatrix.toUint8Buffer(&configBuffer[8]);
+
+    out.write(reinterpret_cast<char *>(&configBuffer), sizeof(uint8_t) * 24);
+
+    Frame frame1(width, height), frame2(width, height);
+    Frame *previousFrame = &frame1;
+    Frame *frame = &frame2;
 
     while (in.tellg() < inEnd) {
-        frame.readRaw(in, width, height);
+        frame->readRaw(in);
+        frame->writeI(out, rle, quantMatrix);
 
-        frame.writeI(out);
+        for (int i = 0; i < gop && in.tellg() < inEnd; i++) {
+            Frame *temp = previousFrame;
+            previousFrame = frame;
+            frame = temp;
+
+            frame->readRaw(in);
+            frame->writeP(out, *previousFrame, gop, merange);
+        }
     }
 
     return true;
 }
 
 bool VideoCodec::decode(std::ifstream &in, long inEnd, std::ofstream &out, bool motionCompensation) {
-    int width, height;
+    uint8_t configBuffer[24];
 
-    in.read(reinterpret_cast<char *>(&width), sizeof(int));
-    in.read(reinterpret_cast<char *>(&height), sizeof(int));
+    in.read(reinterpret_cast<char *>(&configBuffer), sizeof(uint8_t) * 24);
 
-    Frame frame = Frame();
+    bool rle = false;
+
+    if (((uint16_t*) configBuffer)[2] >= 32768) {
+        rle = true;
+        ((uint16_t*) configBuffer)[2] -= 32768;
+    }
+
+    uint16_t width = ((uint16_t*) configBuffer)[0];
+    uint16_t height = ((uint16_t*) configBuffer)[1];
+    uint16_t gop = ((uint16_t*) configBuffer)[2];
+    uint16_t merange = ((uint16_t*) configBuffer)[3];
+
+    ValueBlock4x4 quantMatrix;
+    quantMatrix.fromUint8Buffer(&configBuffer[8]);
+
+    Frame frame1(width, height), frame2(width, height);
+    Frame *previousFrame = &frame1;
+    Frame *frame = &frame2;
 
     while (in.tellg() < inEnd) {
-        frame.readI(in, width, height);
+        frame->readI(in, rle, quantMatrix);
+        frame->writeRaw(out);
 
-        frame.writeRaw(out);
+        for (int i = 0; i < gop && in.tellg() < inEnd; i++) {
+            Frame *temp = previousFrame;
+            previousFrame = frame;
+            frame = temp;
+
+            frame->readP(in, *previousFrame, gop, merange, motionCompensation);
+            frame->writeRaw(out);
+        }
     }
 
     return true;

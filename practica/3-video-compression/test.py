@@ -149,5 +149,4 @@ def main() -> None:
 
         vlc_open_yuv('%s/%s.out.yuv' % (directory, name), 352, 288)
 
-
 main()

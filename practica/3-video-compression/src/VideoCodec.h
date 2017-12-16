@@ -8,8 +8,8 @@
 class VideoCodec {
 public:
     bool encode(std::ifstream &in, long inEnd, std::ofstream &out,
-                int width, int height,
-                bool rle, ValueBlock4x4 &quantMatrix, int gop, int merange);
+                uint16_t width, uint16_t height,
+                bool rle, ValueBlock4x4 &quantMatrix, uint16_t gop, uint16_t merange);
 
     bool decode(std::ifstream &in, long inEnd, std::ofstream &out, bool motionCompensation);
 };

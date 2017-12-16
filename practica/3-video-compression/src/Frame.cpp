@@ -1,37 +1,19 @@
 #include <bitset>
 #include <fstream>
-#include <iostream>
 #include "Frame.h"
 
 int Frame::numInstances = 0;
 int Frame::frameBufferSize = 0;
 uint8_t *Frame::frameBuffer = nullptr;
-int16_t Frame::blockBuffer[4][4];
 
-Frame::~Frame() {
-    prepareForRead(0, 0);
+Frame::Frame(uint16_t width, uint16_t height) : width(width), height(height),
+                                                rawSize((int) (width * height * 1.5)), numBlocks((width * height) / 16),
+                                                blocks(new ValueBlock4x4 *[numBlocks]) {
+    numInstances++;
 
-    numInstances--;
-
-    if (numInstances == 0) {
-        delete[] frameBuffer;
-        frameBuffer = nullptr;
-        frameBufferSize = 0;
+    for (int blockIndex = 0; blockIndex < numBlocks; blockIndex++) {
+        blocks[blockIndex] = new ValueBlock4x4();
     }
-}
-
-void Frame::prepareForRead(int width, int height) {
-    if (numBlocks > 0) {
-        for (int i = 0; i < numBlocks; i++) {
-            delete blocks[i];
-        }
-
-        delete[] blocks;
-    }
-
-    this->rawSize = (int) (width * height * 1.5);
-    this->numBlocks = (width * height) / 16;
-    this->blocks = (numBlocks > 0) ? (new ValueBlock4x4*[numBlocks]) : nullptr;
 
     if (rawSize > frameBufferSize) {
         delete[] frameBuffer;
@@ -40,64 +22,52 @@ void Frame::prepareForRead(int width, int height) {
     }
 }
 
-bool Frame::readRaw(std::ifstream &in, int width, int height) {
-    prepareForRead(width, height);
+Frame::~Frame() {
+    numInstances--;
 
+    for (int i = 0; i < numBlocks; i++) {
+        delete blocks[i];
+    }
+
+    delete[] blocks;
+
+    if (numInstances == 0) {
+        delete[] frameBuffer;
+        frameBuffer = nullptr;
+        frameBufferSize = 0;
+    }
+}
+
+bool Frame::readRaw(std::ifstream &in) {
     in.read(reinterpret_cast<char *>(frameBuffer), rawSize);
 
-    int byteIndex = 0;
-
-    for (int blockIndex = 0; blockIndex < numBlocks; blockIndex++) {
-        for (int rowIndex = 0; rowIndex < 4; rowIndex++) {
-            for (int colIndex = 0; colIndex < 4; colIndex++) {
-                blockBuffer[rowIndex][colIndex] = frameBuffer[byteIndex];
-                byteIndex++;
-            }
-        }
-
-        blocks[blockIndex] = new ValueBlock4x4(blockBuffer);
+    for (int blockIndex = 0, byteIndex = 0; blockIndex < numBlocks; blockIndex++, byteIndex += 16) {
+        blocks[blockIndex]->fromUint8Buffer(frameBuffer + byteIndex);
     }
 
     return true;
 }
 
-bool Frame::readI(std::ifstream &in, int width, int height) {
-    prepareForRead(width, height);
-
+bool Frame::readI(std::ifstream &in, bool rle, const ValueBlock4x4 &quantMatrix) {
     in.read(reinterpret_cast<char *>(frameBuffer), width * height);
 
-    int byteIndex = 0;
-
-    for (int blockIndex = 0; blockIndex < numBlocks; blockIndex++) {
-        for (int rowIndex = 0; rowIndex < 4; rowIndex++) {
-            for (int colIndex = 0; colIndex < 4; colIndex++) {
-                blockBuffer[rowIndex][colIndex] = frameBuffer[byteIndex];
-                byteIndex++;
-            }
-        }
-
-        blocks[blockIndex] = new ValueBlock4x4(blockBuffer);
+    for (int blockIndex = 0, byteIndex = 0; blockIndex < numBlocks; blockIndex++, byteIndex += 16) {
+        blocks[blockIndex]->fromUint8Buffer(frameBuffer + byteIndex);
     }
 
     return true;
 }
 
-bool Frame::readP(std::ifstream &in) {
-    return false;
+bool Frame::readP(std::ifstream &in, const Frame &previousFrame, uint16_t gop, uint16_t merange,
+                  bool motionCompensation) {
+    return readRaw(in);
 }
 
 bool Frame::writeRaw(std::ofstream &out) {
     int byteIndex = 0;
 
-    for (int blockIndex = 0; blockIndex < numBlocks; blockIndex++) {
-        auto raw = blocks[blockIndex]->getData();
-
-        for (int rowIndex = 0; rowIndex < 4; rowIndex++) {
-            for (int colIndex = 0; colIndex < 4; colIndex++) {
-                frameBuffer[byteIndex] = (uint8_t) *(raw + rowIndex * 4 + colIndex);
-                byteIndex++;
-            }
-        }
+    for (int blockIndex = 0; blockIndex < numBlocks; blockIndex++, byteIndex += 16) {
+        blocks[blockIndex]->toUint8Buffer(frameBuffer + byteIndex);
     }
 
     for (; byteIndex < rawSize; byteIndex++) {
@@ -109,18 +79,11 @@ bool Frame::writeRaw(std::ofstream &out) {
     return true;
 }
 
-bool Frame::writeI(std::ofstream &out) {
+bool Frame::writeI(std::ofstream &out, bool rle, const ValueBlock4x4 &quantMatrix) {
     int byteIndex = 0;
 
-    for (int blockIndex = 0; blockIndex < numBlocks; blockIndex++) {
-        auto raw = blocks[blockIndex]->getData();
-
-        for (int rowIndex = 0; rowIndex < 4; rowIndex++) {
-            for (int colIndex = 0; colIndex < 4; colIndex++) {
-                frameBuffer[byteIndex] = (uint8_t) *(raw + rowIndex * 4 + colIndex);
-                byteIndex++;
-            }
-        }
+    for (int blockIndex = 0; blockIndex < numBlocks; blockIndex++, byteIndex += 16) {
+        blocks[blockIndex]->toUint8Buffer(frameBuffer + byteIndex);
     }
 
     out.write(reinterpret_cast<const char *>(frameBuffer), byteIndex);
@@ -128,6 +91,6 @@ bool Frame::writeI(std::ofstream &out) {
     return true;
 }
 
-bool Frame::writeP(std::ofstream &out) {
-    return false;
+bool Frame::writeP(std::ofstream &out, const Frame &previousFrame, uint16_t gop, uint16_t merange) {
+    return writeRaw(out);
 }

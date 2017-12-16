@@ -7,33 +7,29 @@
 
 class Frame {
 public:
-    Frame() { numInstances++; }
+    Frame(uint16_t width, uint16_t height);
 
     ~Frame();
 
-    bool readRaw(std::ifstream &in, int width, int height);
+    bool readRaw(std::ifstream &in);
 
-    bool readI(std::ifstream &in, int width, int height);
+    bool readI(std::ifstream &in, bool rle, const ValueBlock4x4 &quantMatrix);
 
-    bool readP(std::ifstream &in);
+    bool readP(std::ifstream &in, const Frame &previousFrame, uint16_t gop, uint16_t merange, bool motionCompensation);
 
     bool writeRaw(std::ofstream &out);
 
-    bool writeI(std::ofstream &out);
+    bool writeI(std::ofstream &out, bool rle, const ValueBlock4x4 &quantMatrix);
 
-    bool writeP(std::ofstream &out);
+    bool writeP(std::ofstream &out, const Frame &previousFrame, uint16_t gop, uint16_t merange);
 
 private:
-    static int numInstances;
-    static int frameBufferSize;
+    static int numInstances, frameBufferSize;
     static uint8_t *frameBuffer;
-    static int16_t blockBuffer[4][4];
 
-    int rawSize = 0;
-    int numBlocks = 0;
-    ValueBlock4x4 **blocks = nullptr;
-
-    void prepareForRead(int width, int height);
+    const uint16_t width, height;
+    const int rawSize, numBlocks;
+    ValueBlock4x4 **const blocks;
 };
 
 
