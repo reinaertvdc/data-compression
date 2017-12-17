@@ -27,7 +27,7 @@ bool VideoCodec::encode(std::ifstream &in, long inEnd, std::ofstream &out, uint1
         frame->readRaw(in);
         frame->writeI(out, rle, quantMatrix);
 
-        for (int i = 0; i < gop && in.tellg() < inEnd; i++) {
+        for (int i = 1; i < gop && in.tellg() < inEnd; i++) {
             Frame *temp = previousFrame;
             previousFrame = frame;
             frame = temp;
@@ -68,7 +68,7 @@ bool VideoCodec::decode(std::ifstream &in, long inEnd, std::ofstream &out, bool 
         frame->readI(in, rle, quantMatrix);
         frame->writeRaw(out);
 
-        for (int i = 0; i < gop && in.tellg() < inEnd; i++) {
+        for (int i = 1; i < gop && in.tellg() < inEnd; i++) {
             Frame *temp = previousFrame;
             previousFrame = frame;
             frame = temp;
