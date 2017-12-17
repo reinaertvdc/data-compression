@@ -7,7 +7,7 @@
 
 class Frame {
 public:
-    Frame(uint16_t width, uint16_t height);
+    Frame(int width, int height);
 
     ~Frame();
 
@@ -27,7 +27,7 @@ private:
     static int numInstances, frameBufferSize;
     static uint8_t *frameBuffer;
 
-    const uint16_t width, height;
+    const int width, height;
     const int rawSize, numBlocks;
     ValueBlock4x4 **const blocks;
 };

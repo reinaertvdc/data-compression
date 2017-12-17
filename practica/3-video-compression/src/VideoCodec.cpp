@@ -6,8 +6,8 @@ bool VideoCodec::encode(std::ifstream &in, long inEnd, std::ofstream &out, uint1
                         ValueBlock4x4 &quantMatrix, uint16_t gop, uint16_t merange) {
     uint8_t configBuffer[24];
 
-    ((uint16_t*) configBuffer)[0] = width;
-    ((uint16_t*) configBuffer)[1] = height;
+    ((uint16_t*) configBuffer)[0] = static_cast<uint16_t>(width / 4);
+    ((uint16_t*) configBuffer)[1] = static_cast<uint16_t>(height / 4);
     ((uint16_t*) configBuffer)[2] = gop;
     ((uint16_t*) configBuffer)[3] = merange;
 
@@ -52,8 +52,8 @@ bool VideoCodec::decode(std::ifstream &in, long inEnd, std::ofstream &out, bool 
         ((uint16_t*) configBuffer)[2] -= 32768;
     }
 
-    uint16_t width = ((uint16_t*) configBuffer)[0];
-    uint16_t height = ((uint16_t*) configBuffer)[1];
+    int width = ((uint16_t*) configBuffer)[0] * 4;
+    int height = ((uint16_t*) configBuffer)[1] * 4;
     uint16_t gop = ((uint16_t*) configBuffer)[2];
     uint16_t merange = ((uint16_t*) configBuffer)[3];
 

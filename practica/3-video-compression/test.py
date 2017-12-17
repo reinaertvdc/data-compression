@@ -41,7 +41,7 @@ class EncoderConf:
 
         self.width = int(self.width)
         self.height = int(self.height)
-        self.rle = 1 if bool(self.rle) else 0
+        self.rle = 1 if (self.rle in ['1', 'true', 'True', 'TRUE']) else 0
         self.gop = int(self.gop)
         self.merange = int(self.merange)
 
