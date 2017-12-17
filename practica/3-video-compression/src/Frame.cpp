@@ -98,7 +98,7 @@ bool Frame::writeRaw(std::ofstream &out) {
     }
 
     for (; byteIndex < rawSize; byteIndex++) {
-        frameBuffer[byteIndex] = 127;
+        frameBuffer[byteIndex] = 128;
     }
 
     out.write(reinterpret_cast<const char *>(frameBuffer), byteIndex);
