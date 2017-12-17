@@ -42,7 +42,7 @@ class EncoderConf:
         self.width = int(self.width)
         self.height = int(self.height)
         self.rle = 1 if (self.rle in ['1', 'true', 'True', 'TRUE']) else 0
-        self.gop = int(self.gop)
+        self.gop = 4
         self.merange = int(self.merange)
 
 
@@ -67,7 +67,7 @@ def call_wait(command: List[str], working_dir: str=None, silent: bool=True) -> i
 
     if working_dir is not None:
         os.chdir(cwd)
-    
+
     return result
 
 
@@ -141,7 +141,7 @@ def main() -> None:
                         '4 4 8 16\n' +
                         '8 8 32 64\n' +
                         '16 32 64 128')
-        
+
         print('\n' + directory)
 
         encode('%s.enc.conf' % name, directory)

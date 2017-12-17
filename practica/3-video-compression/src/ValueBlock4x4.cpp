@@ -111,6 +111,7 @@ void ValueBlock4x4::fromUint8Buffer(const uint8_t *buffer) {
 
 void ValueBlock4x4::toUint8Buffer(uint8_t *buffer) const {
     for (int i = 0; i < 16; i++) {
-        buffer[i] = (uint8_t) matrix[i % 4][i / 4];
+        int value = matrix[i % 4][i / 4];
+        buffer[i] = (uint8_t) std::max(0, value);
     }
 }
