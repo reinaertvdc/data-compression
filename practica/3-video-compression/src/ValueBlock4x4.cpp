@@ -115,3 +115,11 @@ void ValueBlock4x4::toUint8Buffer(uint8_t *buffer) const {
         buffer[i] = (uint8_t) std::max(0, value);
     }
 }
+
+void ValueBlock4x4::copy(const ValueBlock4x4 &other) {
+    if (!other.isEmpty()) {
+        std::memcpy(this->matrix, other.matrix, sizeof(int16_t) * 16);
+    }
+
+    empty = other.empty;
+}

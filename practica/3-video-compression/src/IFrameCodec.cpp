@@ -6,7 +6,6 @@
 
 uint8_t *IFrameCodec::toStorageFormat(int16_t *data, int size, int &outSize, int width, int height, bool rle,
                                       const ValueBlock4x4 &quant) {
-
     util::BitStreamWriter outBits(size * 2 * 18 / 16 + 256);
 
     int iData = 0;

@@ -11,17 +11,21 @@ public:
 
     ~Frame();
 
+    bool copy(const Frame &other);
+
     bool readRaw(std::ifstream &in);
 
     bool readI(std::ifstream &in, bool rle, const ValueBlock4x4 &quantMatrix);
 
-    bool readP(std::ifstream &in, const Frame &previousFrame, uint16_t gop, uint16_t merange, bool motionCompensation);
+    bool readP(std::ifstream &in, bool rle, const ValueBlock4x4 &quantMatrix, const Frame &previousFrame, uint16_t  gop,
+               uint16_t merange, bool motionCompensation);
 
     bool writeRaw(std::ofstream &out);
 
     bool writeI(std::ofstream &out, bool rle, const ValueBlock4x4 &quantMatrix);
 
-    bool writeP(std::ofstream &out, const Frame &previousFrame, uint16_t gop, uint16_t merange);
+    bool writeP(std::ofstream &out, bool rle, const ValueBlock4x4 &quantMatrix, const Frame &previousFrame,
+                uint16_t gop, uint16_t merange);
 
 private:
     static int numInstances, frameBufferSize;

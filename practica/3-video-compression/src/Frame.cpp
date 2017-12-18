@@ -26,6 +26,18 @@ Frame::Frame(int width, int height) : width(width), height(height),
     numInstances++;
 }
 
+bool Frame::copy(const Frame &other) {
+    if (width != other.width || height != other.height) {
+        return false;
+    }
+
+    for (int i = 0; i < numBlocks; i++) {
+        blocks[i]->copy(*other.blocks[i]);
+    }
+
+    return true;
+}
+
 Frame::~Frame() {
     numInstances--;
 
@@ -85,8 +97,8 @@ bool Frame::readI(std::ifstream &in, bool rle, const ValueBlock4x4 &quantMatrix)
     return true;
 }
 
-bool Frame::readP(std::ifstream &in, const Frame &previousFrame, uint16_t gop, uint16_t merange,
-                  bool motionCompensation) {
+bool Frame::readP(std::ifstream &in, bool rle, const ValueBlock4x4 &quantMatrix, const Frame &previousFrame,
+                  uint16_t gop, uint16_t merange, bool motionCompensation) {
     return readRaw(in);
 }
 
@@ -143,6 +155,7 @@ bool Frame::writeI(std::ofstream &out, bool rle, const ValueBlock4x4 &quantMatri
     return true;
 }
 
-bool Frame::writeP(std::ofstream &out, const Frame &previousFrame, uint16_t gop, uint16_t merange) {
+bool Frame::writeP(std::ofstream &out, bool rle, const ValueBlock4x4 &quantMatrix, const Frame &previousFrame,
+                   uint16_t gop, uint16_t merange) {
     return writeRaw(out);
 }

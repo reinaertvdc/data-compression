@@ -42,6 +42,11 @@ public:
      */
     explicit ValueBlock4x4(const int16_t *array);
     /**
+     * Make this object a copy of the given object
+     * @param other the object to copy
+     */
+    void copy(const ValueBlock4x4 &other);
+    /**
      * Set the block to contain values, useful when setting values using the matrix point
      */
     void setFilled() { this->empty = false; }
@@ -49,7 +54,7 @@ public:
      * Check whether or not the block is empty (does not contain values)
      * @return true if empty, false otherwise
      */
-    bool isEmpty() { return this->empty; }
+    bool isEmpty() const { return this->empty; }
     /**
      * Get a pointer to the matrix in this class
      * @return pointer to the matrix (DO NOT DELETE)
