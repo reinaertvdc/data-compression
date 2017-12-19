@@ -42,6 +42,12 @@ private:
     void readMacroBlock(int16_t *buffer, int macroRow, int macroCol) const;
 
     void writeMacroBlock(int16_t *buffer, int macroRow, int macroCol);
+
+    void findClosestMatch(int16_t *macroBlock, int row, int col, uint16_t merange, int &matchRow, int &matchCol) const;
+
+    void getMotionCompensation(int16_t *macroBlock, int row, int col);
+
+    void applyMotionCompensation(int16_t *macroBlock, int row, int col);
 };
 
 

@@ -114,7 +114,7 @@ void ValueBlock4x4::fromUint8Buffer(const uint8_t *buffer, int width) {
 void ValueBlock4x4::toUint8Buffer(uint8_t *buffer, int width) const {
     for (int row = 0; row < 4; row++) {
         for (int col = 0; col < 4; col++) {
-            buffer[width * row + col] = (uint8_t) std::max(0, (int) matrix[row][col]);
+            buffer[width * row + col] = (uint8_t) std::max(0, std::min(255, (int) matrix[row][col]));
         }
     }
 }
