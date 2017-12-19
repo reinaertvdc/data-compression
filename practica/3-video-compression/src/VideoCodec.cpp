@@ -15,7 +15,7 @@ bool VideoCodec::encode(std::ifstream &in, long inEnd, std::ofstream &out, uint1
         ((uint16_t*) configBuffer)[2] += 32768;
     }
 
-    quantMatrix.toUint8Buffer(&configBuffer[8]);
+    quantMatrix.toUint8Buffer(&configBuffer[8], 4);
 
     out.write(reinterpret_cast<char *>(&configBuffer), sizeof(uint8_t) * 24);
 
@@ -61,7 +61,7 @@ bool VideoCodec::decode(std::ifstream &in, long inEnd, std::ofstream &out, bool 
     uint16_t merange = ((uint16_t*) configBuffer)[3];
 
     ValueBlock4x4 quantMatrix;
-    quantMatrix.fromUint8Buffer(&configBuffer[8]);
+    quantMatrix.fromUint8Buffer(&configBuffer[8], 4);
 
     Frame frame1(width, height), frame2(width, height);
     Frame *previousFrame = &frame1;

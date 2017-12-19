@@ -101,18 +101,21 @@ ValueBlock4x4::ValueBlock4x4(const int16_t *array) {
     this->setFilled();
 }
 
-void ValueBlock4x4::fromUint8Buffer(const uint8_t *buffer) {
-    for (int i = 0; i < 16; i++) {
-        matrix[i % 4][i / 4] = buffer[i];
+void ValueBlock4x4::fromUint8Buffer(const uint8_t *buffer, int width) {
+    for (int row = 0; row < 4; row++) {
+        for (int col = 0; col < 4; col++) {
+            matrix[row][col] = buffer[width * row + col];
+        }
     }
 
     setFilled();
 }
 
-void ValueBlock4x4::toUint8Buffer(uint8_t *buffer) const {
-    for (int i = 0; i < 16; i++) {
-        int value = matrix[i % 4][i / 4];
-        buffer[i] = (uint8_t) std::max(0, value);
+void ValueBlock4x4::toUint8Buffer(uint8_t *buffer, int width) const {
+    for (int row = 0; row < 4; row++) {
+        for (int col = 0; col < 4; col++) {
+            buffer[width * row + col] = (uint8_t) std::max(0, (int) matrix[row][col]);
+        }
     }
 }
 

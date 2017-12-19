@@ -9,9 +9,12 @@
 int Frame::numInstances = 0;
 int Frame::frameBufferSize = 0;
 uint8_t *Frame::frameBuffer = nullptr;
+int16_t *Frame::pixels = nullptr;
 
-Frame::Frame(int width, int height) : width(width), height(height),
-                                      rawSize((int) (width * height * 1.5)), numBlocks((width * height) / 16),
+Frame::Frame(int width, int height) : width(width), height(height), rawSize((int) (width * height * 1.5)),
+                                      numBlocks((width * height) / 16), numMacroBlocks((width * height) / 64),
+                                      numBlocksPerRow(width / 4), numBlocksPerCol(height / 4),
+                                      numMacroBlocksPerRow(width / 8), numMacroBlocksPerCol(height / 8),
                                       blocks(new ValueBlock4x4 *[numBlocks]) {
     for (int blockIndex = 0; blockIndex < numBlocks; blockIndex++) {
         blocks[blockIndex] = new ValueBlock4x4();
@@ -21,6 +24,9 @@ Frame::Frame(int width, int height) : width(width), height(height),
         delete[] frameBuffer;
         frameBuffer = new uint8_t[rawSize];
         frameBufferSize = rawSize;
+
+        delete[] pixels;
+        pixels = new int16_t[width * height];
     }
 
     numInstances++;
@@ -51,14 +57,18 @@ Frame::~Frame() {
         delete[] frameBuffer;
         frameBuffer = nullptr;
         frameBufferSize = 0;
+
+        delete[] pixels;
     }
 }
 
 bool Frame::readRaw(std::ifstream &in) {
     in.read(reinterpret_cast<char *>(frameBuffer), rawSize);
 
-    for (int blockIndex = 0, byteIndex = 0; blockIndex < numBlocks; blockIndex++, byteIndex += 16) {
-        blocks[blockIndex]->fromUint8Buffer(frameBuffer + byteIndex);
+    for (int blockRow = 0, byteIndex = 0; blockRow < numBlocksPerCol; blockRow++, byteIndex += width * 3) {
+        for (int blockCol = 0; blockCol < numBlocksPerRow; blockCol++, byteIndex += 4) {
+            blocks[blockRow * numBlocksPerRow + blockCol]->fromUint8Buffer(frameBuffer + byteIndex, width);
+        }
     }
 
     return true;
@@ -105,8 +115,10 @@ bool Frame::readP(std::ifstream &in, bool rle, const ValueBlock4x4 &quantMatrix,
 bool Frame::writeRaw(std::ofstream &out) {
     int byteIndex = 0;
 
-    for (int blockIndex = 0; blockIndex < numBlocks; blockIndex++, byteIndex += 16) {
-        blocks[blockIndex]->toUint8Buffer(frameBuffer + byteIndex);
+    for (int blockRow = 0; blockRow < numBlocksPerCol; blockRow++, byteIndex += width * 3) {
+        for (int blockCol = 0; blockCol < numBlocksPerRow; blockCol++, byteIndex += 4) {
+            blocks[blockRow * numBlocksPerRow + blockCol]->toUint8Buffer(frameBuffer + byteIndex, width);
+        }
     }
 
     for (; byteIndex < rawSize; byteIndex++) {
@@ -157,5 +169,68 @@ bool Frame::writeI(std::ofstream &out, bool rle, const ValueBlock4x4 &quantMatri
 
 bool Frame::writeP(std::ofstream &out, bool rle, const ValueBlock4x4 &quantMatrix, const Frame &previousFrame,
                    uint16_t gop, uint16_t merange) {
+    loadPixels();
+
+    int16_t macroBlock[64];
+
+    for (int macroRow = 0; macroRow < numMacroBlocksPerCol; macroRow++) {
+        for (int macroCol = 0; macroCol < numMacroBlocksPerRow; macroCol++) {
+            readMacroBlock(macroBlock, macroRow, macroCol);
+
+            // TODO Encode macro block
+            //   1. Find closest match
+            //     1. Loop over candidates
+            //       1. Compare with candidate
+            //   2. Store macro block
+            //     1. Store vector
+            //     2. Store motion compensation
+            //       1. Get motion compensation
+
+            writeMacroBlock(macroBlock, macroRow, macroCol);
+        }
+    }
+
     return writeRaw(out);
+}
+
+void Frame::readMacroBlock(int16_t *buffer, int macroRow, int macroCol) const {
+    for (int rowOffset = 0; rowOffset < 2; rowOffset++) {
+        for (int colOffset = 0; colOffset < 2; colOffset++) {
+            int16_t *block = blocks[(macroRow * 2 + rowOffset) * numBlocksPerRow + macroCol * 2 + colOffset]->getData();
+
+            for (int i = 0, j = rowOffset * 32 + colOffset * 4; i < 16; i += 4, j += 8) {
+                memcpy(&buffer[j], &block[i], sizeof(int16_t) * 4);
+            }
+        }
+    }
+}
+
+void Frame::writeMacroBlock(int16_t *buffer, int macroRow, int macroCol) {
+    for (int rowOffset = 0; rowOffset < 2; rowOffset++) {
+        for (int colOffset = 0; colOffset < 2; colOffset++) {
+            int16_t *block = blocks[(macroRow * 2 + rowOffset) * numBlocksPerRow + macroCol * 2 + colOffset]->getData();
+
+            for (int i = 0, j = rowOffset * 32 + colOffset * 4; i < 16; i += 4, j += 8) {
+                memcpy(&block[i], &buffer[j], sizeof(int16_t) * 4);
+            }
+        }
+    }
+}
+
+void Frame::loadPixels() const {
+    for (int blockRow = 0; blockRow < numBlocksPerCol; blockRow++) {
+        int16_t *blockRowPixels = &pixels[numBlocksPerRow * blockRow * 16];
+
+        for (int blockCol = 0; blockCol < numBlocksPerRow; blockCol++) {
+            int16_t *blockPixels = &blockRowPixels[blockCol * 4];
+            int16_t *block = blocks[blockRow * numBlocksPerRow + blockCol]->getData();
+
+            for (int row = 0; row < 4; row++) {
+                memcpy(blockPixels, block, sizeof(int16_t) * 4);
+
+                blockPixels = &blockPixels[width];
+                block = &block[4];
+            }
+        }
+    }
 }

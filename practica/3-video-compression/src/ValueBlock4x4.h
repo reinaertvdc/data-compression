@@ -64,12 +64,12 @@ public:
      * Copy the first 16 uint8 values from the given buffer to initialize the block
      * @param buffer the values to initialize the block with
      */
-    void fromUint8Buffer(const uint8_t *buffer);
+    void fromUint8Buffer(const uint8_t *buffer, int width);
     /**
      * Copy the block to the first 16 uint8 values of the given buffer, truncating the higher eight bits of each value
      * @param buffer the buffer to write to
      */
-    void toUint8Buffer(uint8_t *buffer) const;
+    void toUint8Buffer(uint8_t *buffer, int width) const;
     /**
      * Apply the DCT algorithm to the matrix in this class
      */
