@@ -42,8 +42,8 @@ class EncoderConf:
         self.width = int(self.width)
         self.height = int(self.height)
         self.rle = 1 if (self.rle in ['1', 'true', 'True', 'TRUE']) else 0
-        self.gop = 10000; int(self.gop)
-        self.merange = 2; int(self.merange)
+        self.gop = int(self.gop)
+        self.merange = int(self.merange)
 
 
 def build() -> None:
