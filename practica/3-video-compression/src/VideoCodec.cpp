@@ -19,15 +19,13 @@ bool VideoCodec::encode(std::ifstream &in, long inEnd, std::ofstream &out, uint1
 
     out.write(reinterpret_cast<char *>(&configBuffer), sizeof(uint8_t) * 24);
 
-    Frame frame1(width, height), frame2(width, height), frame3(width, height);
+    Frame frame1(width, height), frame2(width, height);
     Frame *previousFrame = &frame1;
     Frame *frame = &frame2;
-    Frame *workFrame = &frame3;
 
     while (in.tellg() < inEnd) {
         frame->readRaw(in);
-        workFrame->copy(*frame);
-        workFrame->writeI(out, rle, quantMatrix);
+        frame->writeI(out, rle, quantMatrix);
 
         for (int i = 1; i < gop && in.tellg() < inEnd; i++) {
             Frame *temp = previousFrame;
@@ -35,8 +33,8 @@ bool VideoCodec::encode(std::ifstream &in, long inEnd, std::ofstream &out, uint1
             frame = temp;
 
             frame->readRaw(in);
-            workFrame->copy(*frame);
-            workFrame->writeP(out, rle, quantMatrix, *previousFrame, gop, merange);
+            frame->copy(*frame);
+            frame->writeP(out, rle, quantMatrix, *previousFrame, merange);
         }
     }
 
@@ -76,7 +74,7 @@ bool VideoCodec::decode(std::ifstream &in, long inEnd, std::ofstream &out, bool 
             previousFrame = frame;
             frame = temp;
 
-            frame->readP(in, rle, quantMatrix, *previousFrame, gop, merange, motionCompensation);
+            frame->readP(in, rle, quantMatrix, *previousFrame, merange, motionCompensation);
             frame->writeRaw(out);
         }
     }

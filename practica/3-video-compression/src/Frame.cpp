@@ -2,7 +2,7 @@
 #include <fstream>
 #include <cstring>
 #include <iostream>
-#include <tgmath.h>
+#include <ctgmath>
 #include "Frame.h"
 #include "RleCodec.h"
 #include "IFrameCodec.h"
@@ -77,12 +77,18 @@ bool Frame::readRaw(std::ifstream &in) {
 }
 
 bool Frame::readI(std::ifstream &in, bool rle, const ValueBlock4x4 &quantMatrix) {
-    int compressedSize, encodedSize;
+    int compressedSize;
 
     in.read(reinterpret_cast<char *>(&compressedSize), sizeof(int));
     in.read(reinterpret_cast<char *>(frameBuffer), compressedSize);
 
-    int16_t *encoded = IFrameCodec::fromStorageFormat(frameBuffer, compressedSize, encodedSize, width, height, rle,
+    return loadI(frameBuffer, compressedSize, rle, quantMatrix);
+}
+
+bool Frame::loadI(uint8_t *data, int compressedSize, bool rle, const ValueBlock4x4 &quantMatrix) {
+    int encodedSize;
+
+    int16_t *encoded = IFrameCodec::fromStorageFormat(data, compressedSize, encodedSize, width, height, rle,
                                                       quantMatrix);
 
     int indexEncodedImage = 0;
@@ -110,10 +116,8 @@ bool Frame::readI(std::ifstream &in, bool rle, const ValueBlock4x4 &quantMatrix)
 }
 
 bool Frame::readP(std::ifstream &in, bool rle, const ValueBlock4x4 &quantMatrix, const Frame &previousFrame,
-                  uint16_t gop, uint16_t merange, bool motionCompensation) {
+                  uint16_t merange, bool motionCompensation) {
     previousFrame.loadPixels();
-
-    int16_t macroBlock[64];
 
     auto bitsPerVectorDim = (int) ceil(log2(merange * 2 + 1));
     auto vectorStreamSize = (int) ceil((numMacroBlocks * bitsPerVectorDim * 2) / 8.0);
@@ -121,6 +125,15 @@ bool Frame::readP(std::ifstream &in, bool rle, const ValueBlock4x4 &quantMatrix,
     in.read(reinterpret_cast<char *>(&vectorBuffer), sizeof(uint8_t) * vectorStreamSize);
 
     readI(in, rle, quantMatrix);
+
+    return loadP(vectorBuffer, vectorStreamSize, quantMatrix, previousFrame, merange, motionCompensation);
+}
+
+bool Frame::loadP(uint8_t *vectorBuffer, int vectorStreamSize, const ValueBlock4x4 &quantMatrix,
+                  const Frame &previousFrame, uint16_t merange, bool motionCompensation) {
+    auto bitsPerVectorDim = (int) ceil(log2(merange * 2 + 1));
+
+    int16_t macroBlock[64];
 
     if (motionCompensation) {
         util::BitStreamReader vectorStream(vectorBuffer, vectorStreamSize);
@@ -131,14 +144,6 @@ bool Frame::readP(std::ifstream &in, bool rle, const ValueBlock4x4 &quantMatrix,
 
                 int matchRow = vectorStream.get(bitsPerVectorDim) + macroRow * 8 - merange;
                 int matchCol = vectorStream.get(bitsPerVectorDim) + macroCol * 8 - merange;
-
-                // TODO Encode macro block
-                //   1. Find closest match
-                //     1. Loop over candidates
-                //       1. Compare with candidate
-                //   2. Store macro block
-                //     1. Store motion compensation
-                //       1. Get motion compensation
 
                 applyMotionCompensation(macroBlock, matchRow, matchCol);
 
@@ -200,13 +205,15 @@ bool Frame::writeI(std::ofstream &out, bool rle, const ValueBlock4x4 &quantMatri
     out.write(reinterpret_cast<const char *>(&size), sizeof(int));
     out.write(reinterpret_cast<const char *>(data), size);
 
+    loadI(data, size, rle, quantMatrix);
+
     delete[] data;
 
     return true;
 }
 
 bool Frame::writeP(std::ofstream &out, bool rle, const ValueBlock4x4 &quantMatrix, const Frame &previousFrame,
-                   uint16_t gop, uint16_t merange) {
+                   uint16_t merange) {
     previousFrame.loadPixels();
 
     int16_t macroBlock[64];
@@ -229,23 +236,15 @@ bool Frame::writeP(std::ofstream &out, bool rle, const ValueBlock4x4 &quantMatri
 
             getMotionCompensation(macroBlock, matchRow, matchCol);
 
-            //out.write(reinterpret_cast<const char *>(frameBuffer), byteIndex);
-
-            // TODO Encode macro block
-            //   1. Find closest match
-            //     1. Loop over candidates
-            //       1. Compare with candidate
-            //   2. Store macro block
-            //     1. Store motion compensation
-            //       1. Get motion compensation
-
             writeMacroBlock(macroBlock, macroRow, macroCol);
         }
     }
 
     out.write(reinterpret_cast<const char *>(&vectorBuffer), sizeof(uint8_t) * vectorStreamSize);
 
-    return writeI(out, rle, quantMatrix);
+    writeI(out, rle, quantMatrix);
+
+    loadP(vectorBuffer, vectorStreamSize, quantMatrix, previousFrame, merange, true);
 }
 
 void Frame::readMacroBlock(int16_t *buffer, int macroRow, int macroCol) const {
@@ -292,24 +291,40 @@ void Frame::loadPixels() const {
 
 void Frame::findClosestMatch(int16_t *macroBlock, int row, int col, uint16_t merange,
                              int &matchRow, int &matchCol) const {
+    int beginRow = std::max(0, row - merange);
+    int endRow = std::min(height - 16, row + merange);
+    int beginCol = std::max(0, col - merange);
+    int endCol = std::min(width - 16, col + merange);
+
+    int minDifference = 255 * 2 * 64 + 1;
+
     matchRow = row;
     matchCol = col;
+
+    for (int i = beginRow; i < endRow; i++) {
+        for (int j = beginCol; j < endCol; j++) {
+            int difference = getDifference(macroBlock, i, j);
+
+            if (difference < minDifference) {
+                minDifference = difference;
+
+                matchRow = i;
+                matchCol = j;
+            }
+        }
+    }
 }
 
 void Frame::getMotionCompensation(int16_t *macroBlock, int row, int col) {
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
-            int16_t *prevPixel = &pixels[width * (row + i) + col + j];
+            int16_t prevPixel = pixels[width * (row + i) + col + j];
             int16_t *pixel = &macroBlock[i * 8 + j];
 
-            int difference = pixel[0] - prevPixel[0];
+            pixel[0] = (int16_t) ((pixel[0] - prevPixel + 128) % 256);
 
-            if (difference > 63) {
-                pixel[0] = (int16_t) (std::round((difference - 63) / 3.0) + 63 + 128);
-            } else if (difference < -64) {
-                pixel[0] = (int16_t) (std::round((difference + 64) / 3.0) - 64 + 128);
-            } else {
-                pixel[0] = (int16_t) (difference + 128);
+            if (pixel[0] < 0) {
+                pixel[0] += 256;
             }
         }
     }
@@ -318,16 +333,29 @@ void Frame::getMotionCompensation(int16_t *macroBlock, int row, int col) {
 void Frame::applyMotionCompensation(int16_t *macroBlock, int row, int col) {
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
-            int16_t *prevPixel = &pixels[width * (row + i) + col + j];
+            int16_t prevPixel = pixels[width * (row + i) + col + j];
             int16_t *pixel = &macroBlock[i * 8 + j];
 
-            if (pixel[0] > 191) {
-                pixel[0] = (int16_t) (prevPixel[0] + ((pixel[0] - 128 - 63) * 3) + 63);
-            } else if (pixel[0] < 64) {
-                pixel[0] = (int16_t) (prevPixel[0] + ((pixel[0] - 128 + 63) * 3) - 63);
-            } else {
-                pixel[0] = (int16_t) (prevPixel[0] + (pixel[0] - 128));
+            pixel[0] = (int16_t) ((pixel[0] + prevPixel - 128) % 256);
+
+            if (pixel[0] < 0) {
+                pixel[0] += 256;
             }
         }
     }
+}
+
+int Frame::getDifference(const int16_t *macroBlock, int row, int col) const {
+    int difference = 0;
+
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            int16_t prevPixel = pixels[width * (row + i) + col + j];
+            int16_t pixel = macroBlock[i * 8 + j];
+
+            difference += std::abs(std::abs(pixel) - std::abs(prevPixel));
+        }
+    }
+
+    return difference;
 }

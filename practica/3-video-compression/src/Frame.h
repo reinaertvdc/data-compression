@@ -17,7 +17,7 @@ public:
 
     bool readI(std::ifstream &in, bool rle, const ValueBlock4x4 &quantMatrix);
 
-    bool readP(std::ifstream &in, bool rle, const ValueBlock4x4 &quantMatrix, const Frame &previousFrame, uint16_t gop,
+    bool readP(std::ifstream &in, bool rle, const ValueBlock4x4 &quantMatrix, const Frame &previousFrame,
                uint16_t merange, bool motionCompensation);
 
     bool writeRaw(std::ofstream &out);
@@ -25,7 +25,7 @@ public:
     bool writeI(std::ofstream &out, bool rle, const ValueBlock4x4 &quantMatrix);
 
     bool writeP(std::ofstream &out, bool rle, const ValueBlock4x4 &quantMatrix, const Frame &previousFrame,
-                uint16_t gop, uint16_t merange);
+                uint16_t merange);
 
 private:
     static int numInstances, frameBufferSize;
@@ -36,6 +36,11 @@ private:
     const int rawSize, numBlocks, numMacroBlocks;
     const int numBlocksPerRow, numBlocksPerCol, numMacroBlocksPerRow, numMacroBlocksPerCol;
     ValueBlock4x4 **const blocks;
+
+    bool loadI(uint8_t *data, int compressedSize, bool rle, const ValueBlock4x4 &quantMatrix);
+
+    bool loadP(uint8_t *vectorBuffer, int vectorStreamSize, const ValueBlock4x4 &quantMatrix,
+               const Frame &previousFrame, uint16_t merange, bool motionCompensation);
 
     void loadPixels() const;
 
@@ -48,6 +53,8 @@ private:
     void getMotionCompensation(int16_t *macroBlock, int row, int col);
 
     void applyMotionCompensation(int16_t *macroBlock, int row, int col);
+
+    int getDifference(const int16_t *macroBlock, int row, int col) const;
 };
 
 
