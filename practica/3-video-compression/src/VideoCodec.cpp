@@ -33,7 +33,6 @@ bool VideoCodec::encode(std::ifstream &in, long inEnd, std::ofstream &out, uint1
             frame = temp;
 
             frame->readRaw(in);
-            frame->copy(*frame);
             frame->writeP(out, rle, quantMatrix, *previousFrame, merange);
         }
     }

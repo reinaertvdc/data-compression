@@ -54,7 +54,7 @@ private:
 
     void applyMotionCompensation(int16_t *macroBlock, int row, int col);
 
-    int getDifference(const int16_t *macroBlock, int row, int col) const;
+    int getDifferenceIfLower(const int16_t *macroBlock, int row, int col, int currentMinDifference) const;
 };
 
 

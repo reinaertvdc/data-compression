@@ -3,6 +3,7 @@
 #include <cstring>
 #include <iostream>
 #include <ctgmath>
+#include <chrono>
 #include "Frame.h"
 #include "RleCodec.h"
 #include "IFrameCodec.h"
@@ -303,7 +304,7 @@ void Frame::findClosestMatch(int16_t *macroBlock, int row, int col, uint16_t mer
 
     for (int i = beginRow; i < endRow; i++) {
         for (int j = beginCol; j < endCol; j++) {
-            int difference = getDifference(macroBlock, i, j);
+            int difference = getDifferenceIfLower(macroBlock, i, j, minDifference);
 
             if (difference < minDifference) {
                 minDifference = difference;
@@ -345,7 +346,7 @@ void Frame::applyMotionCompensation(int16_t *macroBlock, int row, int col) {
     }
 }
 
-int Frame::getDifference(const int16_t *macroBlock, int row, int col) const {
+int Frame::getDifferenceIfLower(const int16_t *macroBlock, int row, int col, int currentMinDifference) const {
     int difference = 0;
 
     for (int i = 0; i < 8; i++) {
@@ -354,6 +355,10 @@ int Frame::getDifference(const int16_t *macroBlock, int row, int col) const {
             int16_t pixel = macroBlock[i * 8 + j];
 
             difference += std::abs(std::abs(pixel) - std::abs(prevPixel));
+
+            if (difference >= currentMinDifference) {
+                return difference;
+            }
         }
     }
 
