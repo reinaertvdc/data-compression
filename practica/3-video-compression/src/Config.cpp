@@ -97,6 +97,6 @@ int Config::getInt(const std::string &key) {
 
 std::string Config::getString(const std::string &key) {
     auto iterator = values.find(key);
-
+    if (iterator == std::map::end()) return std::string();
     return iterator->second;
 }

@@ -35,17 +35,17 @@ Frame::Frame(int width, int height) : width(width), height(height), rawSize((int
     numInstances++;
 }
 
-bool Frame::copy(const Frame &other) {
-    if (width != other.width || height != other.height) {
-        return false;
-    }
-
-    for (int i = 0; i < numBlocks; i++) {
-        blocks[i]->copy(*other.blocks[i]);
-    }
-
-    return true;
-}
+//bool Frame::copy(const Frame &other) {
+//    if (width != other.width || height != other.height) {
+//        return false;
+//    }
+//
+//    for (int i = 0; i < numBlocks; i++) {
+//        blocks[i]->copy(*other.blocks[i]);
+//    }
+//
+//    return true;
+//}
 
 Frame::~Frame() {
     numInstances--;
