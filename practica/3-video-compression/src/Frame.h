@@ -81,6 +81,15 @@ public:
                 uint16_t merange);
 
 private:
+    static constexpr double rawFrameSizeToPixelsRatio = 1.5;
+    static constexpr int blockWidth = 4;
+    static constexpr int blockHeight = blockWidth;
+    static constexpr int blockSize = blockWidth * blockHeight;
+    static constexpr int blocksPerMacroRow = 4;
+    static constexpr int blocksPerMacroCol = blocksPerMacroRow;
+    static constexpr int macroBlockWidth = blockWidth * blocksPerMacroRow;
+    static constexpr int macroBlockHeight = blockWidth * blocksPerMacroCol;
+    static constexpr int macroBlockSize = macroBlockWidth * macroBlockHeight;
     /**
      * Number of Frame class instances (constructor/destructor changes this value)
      */
@@ -217,7 +226,7 @@ private:
      * @return the difference between the macroblocks if the difference is smaller than currentMinDifference
      *         otherwise a value >= currentMinDifference
      */
-    int getDifferenceIfLower(const int16_t *macroBlock, int row, int col, int currentMinDifference) const;
+    inline int getDifferenceNotHigher(const int16_t *macroBlock, int row, int col, int currentMinDifference) const;
 };
 
 
