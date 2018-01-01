@@ -73,7 +73,7 @@ bool Config::readLine(FILE *file, std::string &line) {
             break;
         }
 
-        lineBuffer[lineLength - 1] = NULL;
+        lineBuffer[lineLength - 1] = '\0';
         lineLength--;
     }
 
@@ -97,6 +97,6 @@ int Config::getInt(const std::string &key) {
 
 std::string Config::getString(const std::string &key) {
     auto iterator = values.find(key);
-    if (iterator == std::map::end()) return std::string();
+//    if (iterator == std::map::end()) return std::string();
     return iterator->second;
 }

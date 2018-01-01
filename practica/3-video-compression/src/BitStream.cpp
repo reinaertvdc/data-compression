@@ -88,6 +88,12 @@ namespace util {
 
     void BitStreamWriter::put_bit( int8_t value )
     {
+        if (position >= size * 8) {
+            uint8_t *newBuffer = new uint8_t[size*2];
+            memcpy(newBuffer, buffer, sizeof(uint8_t) * size);
+            size *= 2;
+        }
+
         int bits_taken = position % 8;
 
         if ( value )

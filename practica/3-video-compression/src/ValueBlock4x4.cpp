@@ -126,3 +126,23 @@ void ValueBlock4x4::copy(const ValueBlock4x4 &other) {
 
     empty = other.empty;
 }
+
+bool ValueBlock4x4::zigzag() {
+    if (this->empty) return false;
+    int16_t tmp[16];
+    for (int i = 0; i < 16; i++) {
+        tmp[i] = this->matrix[ValueBlock4x4::zzPatternRow[i]][ValueBlock4x4::zzPatternCol[i]];
+    }
+    memcpy(this->matrix, tmp, sizeof(int16_t)*16);
+    return false;
+}
+
+bool ValueBlock4x4::deZigzag() {
+    if (this->empty) return false;
+    int16_t tmp[16];
+    memcpy(tmp, this->matrix, sizeof(int16_t) * 16);
+    for (int i = 0; i < 16; i++) {
+        this->matrix[ValueBlock4x4::zzPatternRow[i]][ValueBlock4x4::zzPatternCol[i]] = tmp[i];
+    }
+    return true;
+}

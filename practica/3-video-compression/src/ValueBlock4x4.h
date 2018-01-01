@@ -40,7 +40,7 @@ public:
      * Constructor, initializes the block with values in a zigzag pattern
      * @param array an array of values in zigzag pattern
      */
-    explicit ValueBlock4x4(const int16_t *array);
+    explicit ValueBlock4x4(const int16_t *array) __attribute__ ((deprecated));
     /**
      * Make this object a copy of the given object
      * @param other the object to copy
@@ -97,12 +97,17 @@ public:
     int16_t getValue(int row,
                      int col) const { if (this->empty) return static_cast<int16_t>(0); else return this->matrix[row][col]; }
 
+    //TODO: remove function
     /**
      * Apply a zigzag pattern to the matrix and store the values in a array
      * @param out the array to store the zigzagged values in, this array should have a size of at least 16 int16_t values
      * @return true if succes, false otherwise
      */
-    bool zigzag(int16_t *out) const;
+    bool zigzag(int16_t *out) const __attribute__ ((deprecated));
+
+    bool zigzag();
+
+    bool deZigzag();
 };
 
 

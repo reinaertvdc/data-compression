@@ -6,7 +6,7 @@
 #include <chrono>
 #include "Frame.h"
 #include "RleCodec.h"
-#include "IFrameCodec.h"
+#include "IFrameStorageCodec.h"
 #include "BitStream.h"
 
 int Frame::numInstances = 0;
@@ -75,31 +75,32 @@ bool Frame::readI(std::ifstream &in, bool rle, const ValueBlock4x4 &quantMatrix)
 }
 
 bool Frame::loadI(uint8_t *data, int compressedSize, bool rle, const ValueBlock4x4 &quantMatrix) {
-    int encodedSize;
 
-    int16_t *encoded = IFrameCodec::fromStorageFormat(data, compressedSize, encodedSize, width, height, rle,
-                                                      quantMatrix);
-
-    int indexEncodedImage = 0;
-    for (int blockIndex = 0; blockIndex < numBlocks; blockIndex++) {
-        ValueBlock4x4 &block = *blocks[blockIndex];
-        int tmpInSizeUsed;
-        int16_t *zzPattern;
-        if (rle) {
-            zzPattern = RleCodec::rleDecode(&encoded[indexEncodedImage], blockSize, tmpInSizeUsed);
-            indexEncodedImage += tmpInSizeUsed;
-            block = ValueBlock4x4(zzPattern);
-            delete[] zzPattern;
-        } else {
-            zzPattern = &encoded[indexEncodedImage];
-            indexEncodedImage += blockSize;
-            block = ValueBlock4x4(zzPattern);
-        }
-        block.deQuantize(quantMatrix);
-        block.applyInverseDct();
-    }
-
-    delete[] encoded;
+    int size;
+    IFrameStorageCodec::fromStorageFormat(data, compressedSize, quantMatrix, size, width, height, rle, true, blocks);
+//    int encodedSize;
+//    int16_t *encoded = IFrameStorageCodec::fromStorageFormat(data, compressedSize, encodedSize, width, height, rle);
+//
+//    int indexEncodedImage = 0;
+//    for (int blockIndex = 0; blockIndex < numBlocks; blockIndex++) {
+//        ValueBlock4x4 &block = *blocks[blockIndex];
+//        int tmpInSizeUsed;
+//        int16_t *zzPattern;
+//        if (rle) {
+//            zzPattern = RleCodec::rleDecode(&encoded[indexEncodedImage], blockSize, tmpInSizeUsed);
+//            indexEncodedImage += tmpInSizeUsed;
+//            block = ValueBlock4x4(zzPattern);
+//            delete[] zzPattern;
+//        } else {
+//            zzPattern = &encoded[indexEncodedImage];
+//            indexEncodedImage += blockSize;
+//            block = ValueBlock4x4(zzPattern);
+//        }
+//        block.deQuantize(quantMatrix);                                                                                                                                                                                                
+//        block.applyInverseDct();
+//    }
+//
+//    delete[] encoded;
 
     return true;
 }
@@ -163,40 +164,44 @@ bool Frame::writeRaw(std::ofstream &out) {
 }
 
 bool Frame::writeI(std::ofstream &out, bool rle, const ValueBlock4x4 &quantMatrix) {
-    int16_t rleOutput[width * height * (4 * 4 + 1) / (4 * 4)];
-    int iRleTmpOut = 0;
-
-    for (int blockIndex = 0; blockIndex < numBlocks; blockIndex++) {
-        ValueBlock4x4 &block = *blocks[blockIndex];
-
-        block.applyDct();
-        block.quantize(quantMatrix);
-
-        int16_t zzOutput[blockSize];
-        block.zigzag(zzOutput);
-
-        if (rle) {
-            int len;
-            int16_t *rleBuffer = RleCodec::rleEncode(zzOutput, blockSize, len);
-
-            memcpy(&rleOutput[iRleTmpOut], rleBuffer, len * sizeof(int16_t));
-            delete[] rleBuffer;
-            iRleTmpOut += len;
-        } else {
-            memcpy(&rleOutput[iRleTmpOut], zzOutput, blockSize * sizeof(int16_t));
-            iRleTmpOut += blockSize;
-        }
-    }
-
     int size;
-    uint8_t *data = IFrameCodec::toStorageFormat(rleOutput, iRleTmpOut, size, width, height, rle, quantMatrix);
+    uint8_t *data = IFrameStorageCodec::toStorageFormat(blocks, quantMatrix, size, width, height, rle, true);
 
     out.write(reinterpret_cast<const char *>(&size), sizeof(int));
     out.write(reinterpret_cast<const char *>(data), size);
-
     loadI(data, size, rle, quantMatrix);
 
     delete[] data;
+
+//    int16_t rleOutput[width * height * (4 * 4 + 1) / (4 * 4)];
+//    int iRleTmpOut = 0;
+//
+//    for (int blockIndex = 0; blockIndex < numBlocks; blockIndex++) {
+//        ValueBlock4x4 &block = *blocks[blockIndex];
+//
+//        block.applyDct();
+//        block.quantize(quantMatrix);
+//
+//        int16_t zzOutput[blockSize];
+//        block.zigzag(zzOutput);
+//
+//        if (rle) {
+//            int len;
+//            int16_t *rleBuffer = RleCodec::rleEncode(zzOutput, blockSize, len);
+//
+//            memcpy(&rleOutput[iRleTmpOut], rleBuffer, len * sizeof(int16_t));
+//            delete[] rleBuffer;
+//            iRleTmpOut += len;
+//        } else {
+//            memcpy(&rleOutput[iRleTmpOut], zzOutput, blockSize * sizeof(int16_t));
+//            iRleTmpOut += blockSize;
+//        }
+//    }
+//
+//    int size;
+//    uint8_t *data = IFrameStorageCodec::toStorageFormat(rleOutput, iRleTmpOut, size, width, height, rle);
+//
+//    delete[] data;
 
     return true;
 }
