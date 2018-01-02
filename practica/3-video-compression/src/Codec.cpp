@@ -8,6 +8,9 @@
 #include "DecoderConfig.h"
 #include "QuantFileParser.h"
 #include "VideoCodec.h"
+#include "RleCodec.h"
+#include "BitStream.h"
+#include "CompactingCodec.h"
 
 int Codec::run(Action action, int argc, char *const *argv) {
     if (argc != 2) {
@@ -25,6 +28,9 @@ int Codec::encode(const std::string &configFilePath) {
 
     if (!config.isLoaded()) { return -1; }
 
+    if (!config.logfile.empty())
+        Logger::file.open(config.logfile);
+
     ValueBlock4x4 quant = QuantFileParser::parseFile(config.quantfile);
 
     std::ifstream tempRawFile(config.rawfile, std::ios::binary | std::ios::ate);
@@ -40,6 +46,8 @@ int Codec::encode(const std::string &configFilePath) {
 
     rawFile.close();
     encFile.close();
+    if (Logger::file.is_open())
+        Logger::file.close();
 
     return 0;
 }
@@ -48,6 +56,9 @@ int Codec::decode(const std::string &configFilePath) {
     DecoderConfig config(configFilePath);
 
     if (!config.isLoaded()) { return -1; }
+
+    if (!config.logfile.empty())
+        Logger::file.open(config.logfile);
 
     std::ifstream tempEncFile(config.encfile, std::ios::binary | std::ios::ate);
     long encSize = tempEncFile.tellg();
@@ -60,6 +71,8 @@ int Codec::decode(const std::string &configFilePath) {
 
     encFile.close();
     decFile.close();
+    if (Logger::file.is_open())
+        Logger::file.close();
 
     return 0;
 }

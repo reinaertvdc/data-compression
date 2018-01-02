@@ -23,7 +23,7 @@ public:
      */
     static uint8_t *toStorageFormat(int16_t *data, int size, int &outSize, int width, int height, bool rle) __attribute__ ((deprecated));
 
-    static uint8_t *toStorageFormat(ValueBlock4x4 *pixelBlocks, const ValueBlock4x4 &quantMatrix, int &storageSize, int width, int height, bool rle, bool differentialEncodeDc);
+//    static uint8_t *toStorageFormat(ValueBlock4x4 *pixelBlocks, const ValueBlock4x4 &quantMatrix, int &storageSize, int width, int height, bool rle, bool differentialEncodeDc);
     static uint8_t *toStorageFormat(ValueBlock4x4 **pixelBlocks, const ValueBlock4x4 &quantMatrix, int &storageSize, int width, int height, bool rle, bool differentialEncodeDc);
 
     //TODO: remove function
@@ -39,7 +39,7 @@ public:
      */
     static int16_t *fromStorageFormat(uint8_t *data, int size, int &outSize, int width, int height, bool rle) __attribute__ ((deprecated));
 
-    static bool fromStorageFormat(uint8_t *data, int inSize, const ValueBlock4x4 &quantMatrix, int &outSize, int width, int height, bool rle, bool differentialEncodeAc, ValueBlock4x4 * pixelBlocks);
+//    static bool fromStorageFormat(uint8_t *data, int inSize, const ValueBlock4x4 &quantMatrix, int &outSize, int width, int height, bool rle, bool differentialEncodeAc, ValueBlock4x4 * pixelBlocks);
     static bool fromStorageFormat(uint8_t *data, int inSize, const ValueBlock4x4 &quantMatrix, int &outSize, int width, int height, bool rle, bool differentialEncodeAc, ValueBlock4x4 ** pixelBlocks);
 private:
     static bool differentialEncode(int16_t* data, int size);

@@ -1,36 +1,7 @@
 #include <vector>
 #include <cstring>
+#include <iostream>
 #include "RleCodec.h"
-
-int16_t *RleCodec::rleEncode(int16_t *in, int size, int &outSize) {
-    int nonZeroSize = size;
-    while (nonZeroSize > 0 && static_cast<int>(in[nonZeroSize - 1]) == 0) {
-        nonZeroSize--;
-    }
-    std::vector<int16_t> tmpOut;
-    tmpOut.emplace_back(static_cast<int16_t>(nonZeroSize));
-    for (int i = 0; i < nonZeroSize; i++) {
-        tmpOut.emplace_back(in[i]);
-    }
-    outSize = static_cast<int>(tmpOut.size());
-    auto *out = new int16_t[outSize];
-    memcpy(out, &tmpOut[0], sizeof(int16_t) * outSize);
-    return out;
-}
-
-short *RleCodec::rleDecode(const int16_t *in, int outSize, int &inSizeUsed) {
-    inSizeUsed = 0;
-    int size = in[0];
-    inSizeUsed += 1 + size;
-    auto *out = new int16_t[outSize];
-    for (int i = 0; i < size; i++) {
-        out[i] = in[i + 1];
-    }
-    for (int i = size; i < outSize; i++) {
-        out[i] = 0;
-    }
-    return out;
-}
 
 bool
 RleCodec::rleEncode(const int16_t *data, int16_t *&rleCounts, int16_t *&rleValues, int inputSize, int &outputSize) {
@@ -77,7 +48,7 @@ RleCodec::rleDecode(int16_t *&data, const int16_t *rleCounts, const int16_t *rle
 }
 
 bool
-RleCodec::rleEncodeZeros(const int16_t *data, int16_t *&zeroCounts, int16_t *nonZeros, int inputSize, int &outputSize, int maxZeros) {
+RleCodec::rleEncodeZeros(const int16_t *data, int16_t *&zeroCounts, int16_t *&nonZeros, int inputSize, int &outputSize, int maxZeros) {
     outputSize = 0;
     if (inputSize <= 0 || data == nullptr) {
         zeroCounts = nullptr;

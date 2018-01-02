@@ -14,7 +14,7 @@ public:
 
     static bool rleDecode(int16_t *&data, const int16_t *rleCounts, const int16_t *rleValues, int rleSize, int &outputSize);
 
-    static bool rleEncodeZeros(const int16_t *data, int16_t *&zeroCounts, int16_t *nonZeros, int inputSize, int &outputSize, int maxZeros);
+    static bool rleEncodeZeros(const int16_t *data, int16_t *&zeroCounts, int16_t *&nonZeros, int inputSize, int &outputSize, int maxZeros);
 
     static bool rleDecodeZeros(int16_t *&data, const int16_t *zeroCounts, const int16_t *nonZeros, int rleSize, int &outputSize);
 
@@ -25,7 +25,7 @@ public:
      * @param outSize out the size of the output array
      * @return an array containing the compressed data of size (outSize), the calling class should delete the memory of the array
      */
-    static int16_t *rleEncode(int16_t *in, int size, int &outSize) __attribute__ ((deprecated));
+//    static int16_t *rleEncode(int16_t *in, int size, int &outSize) __attribute__ ((deprecated));
 
     /**
      * Decompresses an array of shorts (int16_t) using RLE
@@ -34,7 +34,7 @@ public:
      * @param inSizeUsed out the amount of array elements used
      * @return an array containing the decompressed data of size (outSize), the calling class should delete the memory of the array
      */
-    static int16_t *rleDecode(const int16_t *in, int outSize, int &inSizeUsed) __attribute__ ((deprecated));
+//    static int16_t *rleDecode(const int16_t *in, int outSize, int &inSizeUsed) __attribute__ ((deprecated));
 };
 
 

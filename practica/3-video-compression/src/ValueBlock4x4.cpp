@@ -134,7 +134,7 @@ bool ValueBlock4x4::zigzag() {
         tmp[i] = this->matrix[ValueBlock4x4::zzPatternRow[i]][ValueBlock4x4::zzPatternCol[i]];
     }
     memcpy(this->matrix, tmp, sizeof(int16_t)*16);
-    return false;
+    return true;
 }
 
 bool ValueBlock4x4::deZigzag() {

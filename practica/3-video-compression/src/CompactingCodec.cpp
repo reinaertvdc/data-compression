@@ -2,20 +2,21 @@
 // Created by cwout on 1/01/18.
 //
 
+#include <iostream>
 #include "CompactingCodec.h"
 
 
 bool CompactingCodec::compactSingleValue(uint32_t value, util::BitStreamWriter &bits, int valueBitsizeBitcount) {
     uint8_t valueBitsize = CompactingCodec::getRequiredBitcount(value);
-    uint8_t valueBitsizeBitcountRequired = CompactingCodec::getRequiredBitcount(valueBitsize);
+    uint8_t valueBitsizeBitcountRequired = CompactingCodec::getRequiredBitcount(static_cast<uint32_t>(valueBitsize - 1));
     if (valueBitsizeBitcountRequired > valueBitsizeBitcount) { return false; }
-    bits.put(valueBitsizeBitcount, valueBitsize);
+    bits.put(valueBitsizeBitcount, static_cast<uint32_t>(valueBitsize - 1));
     bits.put(valueBitsize, value);
     return true;
 }
 
 uint32_t CompactingCodec::decompactSingleValue(util::BitStreamReader &bits, int valueBitsizeBitcount) {
-    uint32_t valueBitsize = bits.get(valueBitsizeBitcount);
+    uint32_t valueBitsize = bits.get(valueBitsizeBitcount) + 1;
     uint32_t value = bits.get(valueBitsize);
     return value;
 }
@@ -56,7 +57,7 @@ int16_t *CompactingCodec::decompact(int outputSize, util::BitStreamReader &bits,
     int min = offsetVal;
     if (offsetSign == 1) { min = -min; }
     for (int i = 0; i < outputSize; i++) {
-        data[outputSize] = static_cast<int16_t>(min + bits.get(valueBitsize));
+        data[i] = static_cast<int16_t>(min + bits.get(valueBitsize));
     }
     return data;
 }
