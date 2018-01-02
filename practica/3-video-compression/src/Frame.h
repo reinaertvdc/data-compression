@@ -164,7 +164,7 @@ private:
      * @param motionCompensation whether or not motion compensation was used
      * @return true if success, false otherwise
      */
-    bool loadP(uint8_t *vectorBuffer, int vectorStreamSize, const ValueBlock4x4 &quantMatrix,
+    bool loadP(int16_t *vectorBufferX, int16_t *vectorBufferY, int vectorStreamSize, const ValueBlock4x4 &quantMatrix,
                const Frame &previousFrame, uint16_t merange, bool motionCompensation);
 
     /**

@@ -99,7 +99,7 @@ bool IFrameStorageCodec::fromStorageFormat(uint8_t *data, int inSize, const Valu
         RleCodec::rleDecode(dcComponents, dcRleCounts, dcComponentStorageValues, dcComponentStorageCount, tmp);
         delete[] dcRleCounts;
     }
-    delete[] dcComponentStorageValues;
+
     //TODO: differential decode
 
     for (int i = 0; i < blockCount; i++) {
@@ -134,6 +134,7 @@ bool IFrameStorageCodec::fromStorageFormat(uint8_t *data, int inSize, const Valu
             block.applyInverseDct();
         }
     }
+    delete[] dcComponentStorageValues;
     if (rle) {
         delete[] dcComponents;
     }

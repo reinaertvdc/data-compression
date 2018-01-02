@@ -9,6 +9,7 @@
 #include "IFrameStorageCodec.h"
 #include "BitStream.h"
 #include "Logger.h"
+#include "CompactingCodec.h"
 
 int Frame::numInstances = 0;
 int Frame::frameBufferSize = 0;
@@ -86,38 +87,70 @@ bool Frame::loadI(uint8_t *data, int compressedSize, bool rle, const ValueBlock4
 
 bool Frame::readP(std::ifstream &in, bool rle, const ValueBlock4x4 &quantMatrix, const Frame &previousFrame,
                   uint16_t merange, bool motionCompensation) {
+    //Frame::writeP()
+//    previousFrame.loadPixels();
+//    int16_t macroBlock[macroBlockSize];
+//    int16_t vectorBufferX[numMacroBlocks];
+//    int16_t vectorBufferY[numMacroBlocks];
+//    for (int macroRow = 0; macroRow < numMacroBlocksPerCol; macroRow++) {
+//        for (int macroCol = 0; macroCol < numMacroBlocksPerRow; macroCol++) {
+//            readMacroBlock(macroBlock, macroRow, macroCol);
+//            int matchRow, matchCol;
+//            findClosestMatch(macroBlock, macroRow * macroBlockWidth, macroCol * macroBlockHeight, merange, matchRow, matchCol);
+//            int macroIndex = macroRow * numMacroBlocksPerRow + macroCol;
+//            vectorBufferY[macroIndex] = static_cast<int16_t>(matchRow - macroRow * macroBlockWidth + merange);
+//            vectorBufferX[macroIndex] = static_cast<int16_t>(matchCol - macroCol * macroBlockHeight + merange);
+//            getMotionCompensation(macroBlock, matchRow, matchCol);
+//            writeMacroBlock(macroBlock, macroRow, macroCol);
+//        }
+//    }
+//    util::BitStreamWriter vectorStream(new uint8_t[numMacroBlocks*2], numMacroBlocks*2);
+//    CompactingCodec::compact(vectorBufferX, numMacroBlocks, vectorStream, 4, 4);
+//    CompactingCodec::compact(vectorBufferY, numMacroBlocks, vectorStream, 4, 4);
+//    vectorStream.flush();
+//    int vectorStreamSize = vectorStream.get_position() / 8;
+//    out.write(reinterpret_cast<const char *>(vectorStream.get_buffer()), sizeof(uint8_t) * vectorStreamSize);
+//    writeI(out, rle, quantMatrix);
+//    loadP(vectorStream.get_buffer(), vectorStreamSize, quantMatrix, previousFrame, merange, true);
+//    delete[] vectorStream.get_buffer();
+
     previousFrame.loadPixels();
 
-    auto bitsPerVectorDim = (int) ceil(log2(merange * 2 + 1));
-    auto vectorStreamSize = (int) ceil((numMacroBlocks * bitsPerVectorDim * 2) / 8.0);
+    uint32_t vectorStreamSize;
+    in.read((char *)(&vectorStreamSize), 4);
     uint8_t vectorBuffer[vectorStreamSize];
-    in.read(reinterpret_cast<char *>(&vectorBuffer), sizeof(uint8_t) * vectorStreamSize);
+    in.read((char *)(&vectorBuffer), vectorStreamSize);
+    util::BitStreamReader vectorStream(vectorBuffer, vectorStreamSize);
+    int16_t *vectorBufferX = CompactingCodec::decompact(numMacroBlocks, vectorStream, 4, 4);
+    int16_t *vectorBufferY = CompactingCodec::decompact(numMacroBlocks, vectorStream, 4, 4);
 
     readI(in, rle, quantMatrix);
 
-    return loadP(vectorBuffer, vectorStreamSize, quantMatrix, previousFrame, merange, motionCompensation);
+    bool ret = loadP(vectorBufferX, vectorBufferY, vectorStreamSize, quantMatrix, previousFrame, merange, motionCompensation);
+    delete[] vectorBufferX;
+    delete[] vectorBufferY;
+    return ret;
 }
 
-bool Frame::loadP(uint8_t *vectorBuffer, int vectorStreamSize, const ValueBlock4x4 &quantMatrix,
+bool Frame::loadP(int16_t *vectorBufferX, int16_t *vectorBufferY, int vectorStreamSize, const ValueBlock4x4 &quantMatrix,
                   const Frame &previousFrame, uint16_t merange, bool motionCompensation) {
-    auto bitsPerVectorDim = (int) ceil(log2(merange * 2 + 1));
-
     int16_t macroBlock[macroBlockSize];
+    for (int macroRow = 0; macroRow < numMacroBlocksPerCol; macroRow++) {
+        for (int macroCol = 0; macroCol < numMacroBlocksPerRow; macroCol++) {
 
-    if (motionCompensation) {
-        util::BitStreamReader vectorStream(vectorBuffer, vectorStreamSize);
-
-        for (int macroRow = 0; macroRow < numMacroBlocksPerCol; macroRow++) {
-            for (int macroCol = 0; macroCol < numMacroBlocksPerRow; macroCol++) {
+            int macroIndex = macroRow * numMacroBlocksPerRow + macroCol;
+            if (motionCompensation) {
                 readMacroBlock(macroBlock, macroRow, macroCol);
-
-                int matchRow = vectorStream.get(bitsPerVectorDim) + macroRow * macroBlockWidth - merange;
-                int matchCol = vectorStream.get(bitsPerVectorDim) + macroCol * macroBlockHeight - merange;
-
-                applyMotionCompensation(macroBlock, matchRow, matchCol);
-
-                writeMacroBlock(macroBlock, macroRow, macroCol);
             }
+            else {
+                for (int i = 0; i < macroBlockSize; i++) {
+                    macroBlock[i] = 0;
+                }
+            }
+            int matchRow = static_cast<int>(vectorBufferY[macroIndex]) + macroRow * macroBlockHeight;
+            int matchCol = static_cast<int>(vectorBufferX[macroIndex]) + macroCol * macroBlockWidth;
+            applyMotionCompensation(macroBlock, matchRow, matchCol);
+            writeMacroBlock(macroBlock, macroRow, macroCol);
         }
     }
 
@@ -152,72 +185,37 @@ bool Frame::writeI(std::ofstream &out, bool rle, const ValueBlock4x4 &quantMatri
 
     delete[] data;
 
-//    int16_t rleOutput[width * height * (4 * 4 + 1) / (4 * 4)];
-//    int iRleTmpOut = 0;
-//
-//    for (int blockIndex = 0; blockIndex < numBlocks; blockIndex++) {
-//        ValueBlock4x4 &block = *blocks[blockIndex];
-//
-//        block.applyDct();
-//        block.quantize(quantMatrix);
-//
-//        int16_t zzOutput[blockSize];
-//        block.zigzag(zzOutput);
-//
-//        if (rle) {
-//            int len;
-//            int16_t *rleBuffer = RleCodec::rleEncode(zzOutput, blockSize, len);
-//
-//            memcpy(&rleOutput[iRleTmpOut], rleBuffer, len * sizeof(int16_t));
-//            delete[] rleBuffer;
-//            iRleTmpOut += len;
-//        } else {
-//            memcpy(&rleOutput[iRleTmpOut], zzOutput, blockSize * sizeof(int16_t));
-//            iRleTmpOut += blockSize;
-//        }
-//    }
-//
-//    int size;
-//    uint8_t *data = IFrameStorageCodec::toStorageFormat(rleOutput, iRleTmpOut, size, width, height, rle);
-//
-//    delete[] data;
-
     return true;
 }
 
 bool Frame::writeP(std::ofstream &out, bool rle, const ValueBlock4x4 &quantMatrix, const Frame &previousFrame,
                    uint16_t merange) {
     previousFrame.loadPixels();
-
     int16_t macroBlock[macroBlockSize];
-
-    auto bitsPerVectorDim = (int) ceil(log2(merange * 2 + 1));
-    auto vectorStreamSize = (int) ceil((numMacroBlocks * bitsPerVectorDim * 2) / 8.0);
-    uint8_t vectorBuffer[vectorStreamSize];
-    util::BitStreamWriter vectorStream(vectorBuffer, vectorStreamSize);
-
+    int16_t vectorBufferX[numMacroBlocks];
+    int16_t vectorBufferY[numMacroBlocks];
     for (int macroRow = 0; macroRow < numMacroBlocksPerCol; macroRow++) {
         for (int macroCol = 0; macroCol < numMacroBlocksPerRow; macroCol++) {
             readMacroBlock(macroBlock, macroRow, macroCol);
-
             int matchRow, matchCol;
-
             findClosestMatch(macroBlock, macroRow * macroBlockWidth, macroCol * macroBlockHeight, merange, matchRow, matchCol);
-
-            vectorStream.put(bitsPerVectorDim, (uint32_t) (matchRow - macroRow * macroBlockWidth + merange));
-            vectorStream.put(bitsPerVectorDim, (uint32_t) (matchCol - macroCol * macroBlockHeight + merange));
-
+            int macroIndex = macroRow * numMacroBlocksPerRow + macroCol;
+            vectorBufferY[macroIndex] = static_cast<int16_t>(matchRow - macroRow * macroBlockHeight);
+            vectorBufferX[macroIndex] = static_cast<int16_t>(matchCol - macroCol * macroBlockWidth);
             getMotionCompensation(macroBlock, matchRow, matchCol);
-
             writeMacroBlock(macroBlock, macroRow, macroCol);
         }
     }
-
-    out.write(reinterpret_cast<const char *>(&vectorBuffer), sizeof(uint8_t) * vectorStreamSize);
-
+    util::BitStreamWriter vectorStream(new uint8_t[numMacroBlocks*2], numMacroBlocks*2);
+    CompactingCodec::compact(vectorBufferX, numMacroBlocks, vectorStream, 4, 4);
+    CompactingCodec::compact(vectorBufferY, numMacroBlocks, vectorStream, 4, 4);
+    vectorStream.flush();
+    uint32_t vectorStreamSize = static_cast<uint32_t>(vectorStream.get_position() / 8);
+    out.write((const char*)(&vectorStreamSize), 4);
+    out.write(reinterpret_cast<const char *>(vectorStream.get_buffer()), sizeof(uint8_t) * vectorStreamSize);
     writeI(out, rle, quantMatrix);
-
-    loadP(vectorBuffer, vectorStreamSize, quantMatrix, previousFrame, merange, true);
+    loadP(vectorBufferX, vectorBufferY, vectorStreamSize, quantMatrix, previousFrame, merange, true);
+    delete[] vectorStream.get_buffer();
 }
 
 void Frame::readMacroBlock(int16_t *buffer, int macroRow, int macroCol) const {
@@ -265,9 +263,9 @@ void Frame::loadPixels() const {
 void Frame::findClosestMatch(int16_t *macroBlock, int row, int col, uint16_t merange,
                              int &matchRow, int &matchCol) const {
     int beginRow = std::max(0, row - merange);
-    int endRow = std::min(height - macroBlockHeight, row + merange);
+    int endRow = std::min(height - macroBlockHeight, row + merange + 1);
     int beginCol = std::max(0, col - merange);
-    int endCol = std::min(width - macroBlockWidth, col + merange);
+    int endCol = std::min(width - macroBlockWidth, col + merange + 1);
 
     int minDifference = 255 * 2 * macroBlockSize + 1;
 
@@ -292,28 +290,25 @@ void Frame::getMotionCompensation(int16_t *macroBlock, int row, int col) {
     for (int i = 0; i < macroBlockWidth; i++) {
         for (int j = 0; j < macroBlockHeight; j++) {
             int16_t prevPixel = pixels[width * (row + i) + col + j];
-            int16_t *pixel = &macroBlock[i * macroBlockWidth + j];
-
-            pixel[0] = (int16_t) ((pixel[0] - prevPixel + 128) % 256);
-
-            if (pixel[0] < 0) {
-                pixel[0] += 256;
-            }
+            int16_t &pixel = macroBlock[i * macroBlockWidth + j];
+            pixel = pixel - prevPixel;
         }
     }
 }
 
 void Frame::applyMotionCompensation(int16_t *macroBlock, int row, int col) {
+//    for (int i = 0; i < macroBlockHeight; i++) {
+//        for (int j = 0; j < macroBlockWidth; j++) {
+//            std::cout << macroBlock[i * macroBlockWidth + j] << "\t";
+//        }
+//        std::cout << std::endl;
+//    }
+
     for (int i = 0; i < macroBlockWidth; i++) {
         for (int j = 0; j < macroBlockHeight; j++) {
             int16_t prevPixel = pixels[width * (row + i) + col + j];
-            int16_t *pixel = &macroBlock[i * macroBlockWidth + j];
-
-            pixel[0] = (int16_t) ((pixel[0] + prevPixel - 128) % 256);
-
-            if (pixel[0] < 0) {
-                pixel[0] += 256;
-            }
+            int16_t &pixel = macroBlock[i * macroBlockWidth + j];
+            pixel = pixel + prevPixel;
         }
     }
 }
