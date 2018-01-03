@@ -22,7 +22,7 @@ class DecoderConf:
 
         self.__dict__.update(entries)
 
-        self.motioncompensation = 1 if (self.motioncompensation in ['1', 'true', 'True', 'TRUE']) else 0
+        self.motioncompensation = 1# if (self.motioncompensation in ['1', 'true', 'True', 'TRUE']) else 0
 
 
 class EncoderConf:
@@ -42,8 +42,8 @@ class EncoderConf:
         self.width = int(self.width)
         self.height = int(self.height)
         self.rle = 1 if (self.rle in ['1', 'true', 'True', 'TRUE']) else 0
-        self.gop = int(self.gop)
-        self.merange = int(self.merange)
+        self.gop = 1000#int(self.gop)
+        self.merange = 1#int(self.merange)
 
 
 def build() -> None:
