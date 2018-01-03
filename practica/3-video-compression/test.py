@@ -8,13 +8,17 @@ from subprocess import DEVNULL
 import sys
 from typing import Any, Dict, List
 
-
-BUILD_DIR = 'cmake-build-debug'
+#BUILD_TYPE = 'Debug'
+BUILD_TYPE = 'Release'
+BUILD_DIR = 'cmake-build/' + BUILD_TYPE
 TEST_DIR = 'tests'
 
 TEST_SAMPLE = None
 FORCE_GOP = None
 FORCE_MERANGE = None
+TEST_SAMPLE = 'sample00'
+FORCE_GOP = 4
+FORCE_MERANGE = 16
 
 class DecoderConf:
     def __init__(self, name: str, entries: Dict[str, str]):
@@ -52,6 +56,9 @@ class EncoderConf:
 
 
 def build() -> None:
+    #cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/cwout/Documents/Unief/Dc/practica/3-video-compression
+    call_wait(['mkdir', '-p', BUILD_DIR])
+    call_wait(['cmake', '-DCMAKE_BUILD_TYPE='+BUILD_TYPE, '-G', 'CodeBlocks - Unix Makefiles', '../../'], working_dir=BUILD_DIR)
     call_wait(['cmake', '--build', BUILD_DIR, '--target', 'all', '--', '-j', '4'])
 
 
