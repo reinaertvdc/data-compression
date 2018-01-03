@@ -12,6 +12,9 @@ from typing import Any, Dict, List
 BUILD_DIR = 'cmake-build-debug'
 TEST_DIR = 'tests'
 
+TEST_SAMPLE = None
+FORCE_GOP = None
+FORCE_MERANGE = None
 
 class DecoderConf:
     def __init__(self, name: str, entries: Dict[str, str]):
@@ -42,8 +45,10 @@ class EncoderConf:
         self.width = int(self.width)
         self.height = int(self.height)
         self.rle = 1 if (self.rle in ['1', 'true', 'True', 'TRUE']) else 0
-        self.gop = 1000#int(self.gop)
-        self.merange = 1#int(self.merange)
+        if FORCE_GOP is not None:
+            self.gop = FORCE_GOP
+        if FORCE_MERANGE is not None:
+            self.merange = FORCE_MERANGE
 
 
 def build() -> None:
@@ -119,6 +124,8 @@ def main() -> None:
     build()
 
     for path in sorted(glob.iglob('%s/**/*.enc.conf' % TEST_DIR)):
+        if TEST_SAMPLE is not None and not path.endswith(TEST_SAMPLE+'.enc.conf'):
+            continue
         directory, name = path[0:-len('.enc.conf')].rsplit('/', 1)
         base_path = '%s/%s' % (directory, name)
 
