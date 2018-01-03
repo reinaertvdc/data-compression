@@ -1,0 +1,6 @@
+   INFO:  Compression rates and sizes
+              rate       avg.comp.size       avg.norm.size   avg.eff.comp.time         frame.count       tot.comp.size       tot.norm.size   tot.eff.comp.time
+total       32.73%               49767              152064             161.7ms                  97             4827423            14750208           15684.9ms
+iframe      39.47%               60021              152064              23.0ms                  25             1500528             3801600             576.1ms
+pframe      30.39%               46206              152064             209.8ms                  72             3326871            10948608           15108.9ms
+
