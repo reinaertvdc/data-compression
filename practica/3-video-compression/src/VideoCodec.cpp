@@ -66,7 +66,7 @@ bool VideoCodec::encode(std::ifstream &in, long inEnd, std::ofstream &out, uint1
     long totalFrameSizeCompressed = totalOutputSize;
     long averageFrameSizeUncompressed = totalFrameSizeUncompressed / totalFrameCount;
     long averageFrameSizeCompressed = totalFrameSizeCompressed / totalFrameCount;
-    long averagePframeSize = totalPframeSize / totalPframeCount;
+    long averagePframeSize = (totalPframeCount > 0) ? (totalPframeSize / totalPframeCount) : 0;
     long averageIframeSize = totalIframeSize / totalIframeCount;
     double compressionRateTotal = static_cast<double>(totalFrameSizeCompressed) / static_cast<double>(totalFrameSizeUncompressed) * 100.0;
     double compressionRateIframe = static_cast<double>(totalIframeSize) / static_cast<double>(totalIframeCount * averageFrameSizeUncompressed) * 100.0;
