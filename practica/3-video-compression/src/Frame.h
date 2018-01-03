@@ -80,8 +80,9 @@ public:
     bool writeP(std::ofstream &out, bool rle, const ValueBlock4x4 &quantMatrix, const Frame &previousFrame,
                 uint16_t merange, double &compressionTime);
 
-private:
+public:
     static constexpr double rawFrameSizeToPixelsRatio = 1.5;
+private:
     static constexpr int blockWidth = 4;
     static constexpr int blockHeight = blockWidth;
     static constexpr int blockSize = blockWidth * blockHeight;

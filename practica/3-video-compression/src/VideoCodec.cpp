@@ -1,6 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <tgmath.h>
 #include "VideoCodec.h"
 #include "Frame.h"
 #include "Logger.h"
@@ -34,7 +35,8 @@ bool VideoCodec::encode(std::ifstream &in, long inEnd, std::ofstream &out, uint1
     double totalPframeCompressionTime = 0;
     double totalIframeCompressionTime = 0;
 
-    while (in.tellg() < inEnd) {
+    int rawFrameSize = static_cast<int>(std::ceil(width * height * Frame::rawFrameSizeToPixelsRatio));
+    while (in.tellg()+rawFrameSize <= inEnd) {
         frame->readRaw(in);
         double iCompressTimeTmp;
         frame->writeI(out, rle, quantMatrix, iCompressTimeTmp);
@@ -45,7 +47,7 @@ bool VideoCodec::encode(std::ifstream &in, long inEnd, std::ofstream &out, uint1
         totalIframeSize += newOutputSize - totalOutputSize;
         totalOutputSize = newOutputSize;
 
-        for (int i = 1; i < gop && in.tellg() < inEnd; i++) {
+        for (int i = 1; i < gop && in.tellg()+rawFrameSize <= inEnd; i++) {
             Frame *temp = previousFrame;
             previousFrame = frame;
             frame = temp;
@@ -75,8 +77,6 @@ bool VideoCodec::encode(std::ifstream &in, long inEnd, std::ofstream &out, uint1
     double averageCompressionTime = totalCompressionTime / totalFrameCount;
     double averagePcompressionTime = totalPframeCompressionTime / totalPframeCount;
     double averageIcompressionTime = totalIframeCompressionTime / totalIframeCount;
-
-    std::cout << totalCompressionTime << std::endl;
 
     std::stringstream ss;
     ss << std::fixed;
