@@ -66,7 +66,7 @@ public:
      * @param quantMatrix the quantization matrix to use for quantizing the dct components
      * @return true in case of success, false in case of failure
      */
-    bool writeI(std::ofstream &out, bool rle, const ValueBlock4x4 &quantMatrix);
+    bool writeI(std::ofstream &out, bool rle, const ValueBlock4x4 &quantMatrix, double &compressionTime);
 
     /**
      * Write the frame as a compressed pframe to a file
@@ -78,7 +78,7 @@ public:
      * @return true in case of success, false in case of failure
      */
     bool writeP(std::ofstream &out, bool rle, const ValueBlock4x4 &quantMatrix, const Frame &previousFrame,
-                uint16_t merange);
+                uint16_t merange, double &compressionTime);
 
 private:
     static constexpr double rawFrameSizeToPixelsRatio = 1.5;

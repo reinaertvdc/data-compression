@@ -10,6 +10,7 @@
 #include "BitStream.h"
 #include "Logger.h"
 #include "CompactingCodec.h"
+#include <time.h>
 
 int Frame::numInstances = 0;
 int Frame::frameBufferSize = 0;
@@ -87,33 +88,6 @@ bool Frame::loadI(uint8_t *data, int compressedSize, bool rle, const ValueBlock4
 
 bool Frame::readP(std::ifstream &in, bool rle, const ValueBlock4x4 &quantMatrix, const Frame &previousFrame,
                   uint16_t merange, bool motionCompensation) {
-    //Frame::writeP()
-//    previousFrame.loadPixels();
-//    int16_t macroBlock[macroBlockSize];
-//    int16_t vectorBufferX[numMacroBlocks];
-//    int16_t vectorBufferY[numMacroBlocks];
-//    for (int macroRow = 0; macroRow < numMacroBlocksPerCol; macroRow++) {
-//        for (int macroCol = 0; macroCol < numMacroBlocksPerRow; macroCol++) {
-//            readMacroBlock(macroBlock, macroRow, macroCol);
-//            int matchRow, matchCol;
-//            findClosestMatch(macroBlock, macroRow * macroBlockWidth, macroCol * macroBlockHeight, merange, matchRow, matchCol);
-//            int macroIndex = macroRow * numMacroBlocksPerRow + macroCol;
-//            vectorBufferY[macroIndex] = static_cast<int16_t>(matchRow - macroRow * macroBlockWidth + merange);
-//            vectorBufferX[macroIndex] = static_cast<int16_t>(matchCol - macroCol * macroBlockHeight + merange);
-//            getMotionCompensation(macroBlock, matchRow, matchCol);
-//            writeMacroBlock(macroBlock, macroRow, macroCol);
-//        }
-//    }
-//    util::BitStreamWriter vectorStream(new uint8_t[numMacroBlocks*2], numMacroBlocks*2);
-//    CompactingCodec::compact(vectorBufferX, numMacroBlocks, vectorStream, 4, 4);
-//    CompactingCodec::compact(vectorBufferY, numMacroBlocks, vectorStream, 4, 4);
-//    vectorStream.flush();
-//    int vectorStreamSize = vectorStream.get_position() / 8;
-//    out.write(reinterpret_cast<const char *>(vectorStream.get_buffer()), sizeof(uint8_t) * vectorStreamSize);
-//    writeI(out, rle, quantMatrix);
-//    loadP(vectorStream.get_buffer(), vectorStreamSize, quantMatrix, previousFrame, merange, true);
-//    delete[] vectorStream.get_buffer();
-
     previousFrame.loadPixels();
 
     uint32_t vectorStreamSize;
@@ -175,21 +149,27 @@ bool Frame::writeRaw(std::ofstream &out) {
     return true;
 }
 
-bool Frame::writeI(std::ofstream &out, bool rle, const ValueBlock4x4 &quantMatrix) {
+bool Frame::writeI(std::ofstream &out, bool rle, const ValueBlock4x4 &quantMatrix, double &compressionTime) {
     int size = 0;
+    clock_t t1  = clock();
     uint8_t *data = IFrameStorageCodec::toStorageFormat(blocks, quantMatrix, size, width, height, rle, false);
+    clock_t t2 = clock();
     uint32_t tmpSize = static_cast<uint32_t>(size);
     out.write((const char *)(&tmpSize), sizeof(uint32_t));
     out.write((const char *)(data), size);
+    clock_t t3 = clock();
     loadI(data, size, rle, quantMatrix);
-
     delete[] data;
+    clock_t t4 = clock();
+
+    compressionTime = (double)((t2 - t1) + (t4 - t3)) / (double)CLOCKS_PER_SEC;
 
     return true;
 }
 
 bool Frame::writeP(std::ofstream &out, bool rle, const ValueBlock4x4 &quantMatrix, const Frame &previousFrame,
-                   uint16_t merange) {
+                   uint16_t merange, double &compressionTime) {
+    clock_t t1 = clock();
     previousFrame.loadPixels();
     int16_t macroBlock[macroBlockSize];
     int16_t vectorBufferX[numMacroBlocks];
@@ -211,11 +191,16 @@ bool Frame::writeP(std::ofstream &out, bool rle, const ValueBlock4x4 &quantMatri
     CompactingCodec::compact(vectorBufferY, numMacroBlocks, vectorStream, 4, 4);
     vectorStream.flush();
     uint32_t vectorStreamSize = static_cast<uint32_t>(vectorStream.get_position() / 8);
+    clock_t t2 = clock();
     out.write((const char*)(&vectorStreamSize), 4);
     out.write(reinterpret_cast<const char *>(vectorStream.get_buffer()), sizeof(uint8_t) * vectorStreamSize);
-    writeI(out, rle, quantMatrix);
+    double tTmp = 0;
+    writeI(out, rle, quantMatrix, tTmp);
+    clock_t t3 = clock();
     loadP(vectorBufferX, vectorBufferY, vectorStreamSize, quantMatrix, previousFrame, merange, true);
     delete[] vectorStream.get_buffer();
+    clock_t t4 =  clock();
+    compressionTime = tTmp + (double)((t2 - t1) + (t4 - t3)) / (double)CLOCKS_PER_SEC;
 }
 
 void Frame::readMacroBlock(int16_t *buffer, int macroRow, int macroCol) const {

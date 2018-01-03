@@ -31,10 +31,14 @@ bool VideoCodec::encode(std::ifstream &in, long inEnd, std::ofstream &out, uint1
     long totalIframeSize = 0;
     long totalPframeCount = 0;
     long totalIframeCount = 0;
+    double totalPframeCompressionTime = 0;
+    double totalIframeCompressionTime = 0;
 
     while (in.tellg() < inEnd) {
         frame->readRaw(in);
-        frame->writeI(out, rle, quantMatrix);
+        double iCompressTimeTmp;
+        frame->writeI(out, rle, quantMatrix, iCompressTimeTmp);
+        totalIframeCompressionTime += iCompressTimeTmp;
 
         totalIframeCount++;
         long newOutputSize = out.tellp();
@@ -46,7 +50,9 @@ bool VideoCodec::encode(std::ifstream &in, long inEnd, std::ofstream &out, uint1
             previousFrame = frame;
             frame = temp;
             frame->readRaw(in);
-            frame->writeP(out, rle, quantMatrix, *previousFrame, merange);
+            double pCompressTimeTmp;
+            frame->writeP(out, rle, quantMatrix, *previousFrame, merange, pCompressTimeTmp);
+            totalPframeCompressionTime += pCompressTimeTmp;
 
             totalPframeCount++;
             newOutputSize = out.tellp();
@@ -65,40 +71,55 @@ bool VideoCodec::encode(std::ifstream &in, long inEnd, std::ofstream &out, uint1
     double compressionRateTotal = static_cast<double>(totalFrameSizeCompressed) / static_cast<double>(totalFrameSizeUncompressed) * 100.0;
     double compressionRateIframe = static_cast<double>(totalIframeSize) / static_cast<double>(totalIframeCount * averageFrameSizeUncompressed) * 100.0;
     double compressionRatePframe = static_cast<double>(totalPframeSize) / static_cast<double>(totalPframeCount * averageFrameSizeUncompressed) * 100.0;
+    double totalCompressionTime = totalPframeCompressionTime + totalIframeCompressionTime;
+    double averageCompressionTime = totalCompressionTime / totalFrameCount;
+    double averagePcompressionTime = totalPframeCompressionTime / totalPframeCount;
+    double averageIcompressionTime = totalIframeCompressionTime / totalIframeCount;
+
+    std::cout << totalCompressionTime << std::endl;
 
     std::stringstream ss;
+    ss << std::fixed;
     ss << "Compression rates and sizes" << std::endl;
     ss << "        "
        << "      rate"
        << "       avg.comp.size"
        << "       avg.norm.size"
+       << "   avg.eff.comp.time"
        << "         frame.count"
        << "       tot.comp.size"
        << "       tot.norm.size"
+       << "   tot.eff.comp.time"
        << std::endl;
     ss << "total   "
        << std::setprecision(2) << std::setw(9)  << compressionRateTotal << "%"
        << std::setprecision(0) << std::setw(20) << averageFrameSizeCompressed
        << std::setprecision(0) << std::setw(20) << averageFrameSizeUncompressed
+       << std::setprecision(1) << std::setw(18) << averageCompressionTime*1000.0 << "ms"
        << std::setprecision(0) << std::setw(20) << totalFrameCount
        << std::setprecision(0) << std::setw(20) << totalFrameSizeCompressed
        << std::setprecision(0) << std::setw(20) << totalFrameSizeUncompressed
+       << std::setprecision(1) << std::setw(18) << totalCompressionTime*1000.0 << "ms"
        << std::endl;
     ss << "iframe  "
        << std::setprecision(2) << std::setw(9) << compressionRateIframe << "%"
        << std::setprecision(0) << std::setw(20) << averageIframeSize
        << std::setprecision(0) << std::setw(20) << averageFrameSizeUncompressed
+       << std::setprecision(1) << std::setw(18) << averageIcompressionTime*1000.0 << "ms"
        << std::setprecision(0) << std::setw(20) << totalIframeCount
        << std::setprecision(0) << std::setw(20) << totalIframeSize
        << std::setprecision(0) << std::setw(20) << (totalIframeCount * averageFrameSizeUncompressed)
+       << std::setprecision(1) << std::setw(18) << totalIframeCompressionTime*1000.0 << "ms"
        << std::endl;
     ss << "pframe  "
        << std::setprecision(2) << std::setw(9) << compressionRatePframe << "%"
        << std::setprecision(0) << std::setw(20) << averagePframeSize
        << std::setprecision(0) << std::setw(20) << averageFrameSizeUncompressed
+       << std::setprecision(1) << std::setw(18) << averagePcompressionTime*1000.0 << "ms"
        << std::setprecision(0) << std::setw(20) << totalPframeCount
        << std::setprecision(0) << std::setw(20) << totalPframeSize
        << std::setprecision(0) << std::setw(20) << (totalPframeCount * averageFrameSizeUncompressed)
+       << std::setprecision(1) << std::setw(18) << totalPframeCompressionTime*1000.0 << "ms"
        << std::endl;
     Logger::info(ss.str());
 
