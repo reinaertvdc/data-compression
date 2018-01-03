@@ -16,9 +16,9 @@ TEST_DIR = 'tests'
 TEST_SAMPLE = None
 FORCE_GOP = None
 FORCE_MERANGE = None
-TEST_SAMPLE = 'sample00'
-FORCE_GOP = 4
-FORCE_MERANGE = 16
+#TEST_SAMPLE = 'sample00'
+#FORCE_GOP = 4
+#FORCE_MERANGE = 16
 
 class DecoderConf:
     def __init__(self, name: str, entries: Dict[str, str]):
